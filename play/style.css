@@ -1,0 +1,1446 @@
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/instrument-serif-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/instrument-serif-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500 600;font-display:swap;src:url('fonts/jetbrains-mono-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500 600;font-display:swap;src:url('fonts/jetbrains-mono-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+:root{
+  --display-font:'Instrument Serif',Georgia,'Noto Serif CJK HK',serif;
+  --mono-font:'JetBrains Mono',ui-monospace,monospace;
+}
+/* The same ground as the front page, grain and all: the gradient covers so narrow a
+   range of red that eight-bit colour bands it, and the grain dithers those away. */
+:root{--red:#9d100a;--dark:#700e0b;--grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23g)' opacity='.055'/></svg>");--ground:var(--grain) repeat,radial-gradient(118% 92% at 50% 44%,#9c0400 0%,#9c0400 34%,#6e0200 100%);--cream:#fff7e8;--paper:#f4e9d7;--ink:#2c201c;--line:#ddc9b3;--muted:#6e5d54}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.4 var(--display-font)}button,input{font:inherit}button,a,input{touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default;opacity:.5}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #ce8a3c;outline-offset:4px}
+header{background:var(--red);color:var(--cream);display:flex;justify-content:space-between;align-items:center;padding:0 5vw;min-height:70px;border-bottom:1px solid #ffffff35;gap:16px}.brand{font:20px var(--display-font);white-space:nowrap;letter-spacing:.02em}.brand b{display:inline-grid;place-items:center;border:1px solid #ffffff72;width:31px;height:34px;margin-right:7px;font-size:19px}nav{display:flex;gap:26px}nav a{padding:23px 2px;color:#ffe4d7;border-bottom:2px solid transparent}nav a[aria-current]{color:#fff;border-color:#fff}.edition,.eyebrow,footer,.tag{font:11px var(--mono-font);letter-spacing:.15em;text-transform:uppercase}.edition i{display:inline-block;width:4px;height:4px;background:#efad7c;border-radius:50%;margin:0 6px}
+.hero{background:var(--red);color:var(--cream);position:relative;overflow:hidden}.wrap{width:min(1200px,90vw);margin:auto}.hero .wrap{position:relative;padding:30px 0 39px;z-index:1}.hero img{position:absolute;width:clamp(220px,31vw,430px);right:5vw;top:-75px;opacity:.27;transform:rotate(-24deg);pointer-events:none}.eyebrow{display:block;color:inherit}.hero h1{font:clamp(55px,10vw,130px)/.92 var(--display-font);letter-spacing:-.075em;margin:10px 0 13px}.hero p{margin:0;color:#ffe0cb;max-width:350px}.content{padding:29px 0 42px}.columns{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(245px,1fr);gap:18px;align-items:start}.panel{background:var(--cream);border:1px solid var(--line);padding:20px;border-radius:9px}.panel h2,.panel h3{font-family:var(--display-font);font-weight:400;margin:5px 0 10px}.panel h2{font-size:32px;line-height:1.06}.panel h3{font-size:22px}.panel p{margin:8px 0 15px;color:var(--muted)}.tag{display:inline-block;border:1px solid var(--line);padding:4px 8px;border-radius:3px;color:var(--dark)}.btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 13px;background:var(--red);color:var(--cream);border:1px solid var(--red);border-radius:5px}.btn.ghost{background:transparent;color:var(--dark);border-color:var(--line)}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.bar strong{font-family:var(--display-font);font-size:21px;font-weight:400}.table{background:#751510;color:#fff3df;border-radius:7px;padding:12px;position:relative}.felt{min-height:230px;border:1px solid #d3976e88;border-radius:5px;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto 1fr auto;gap:10px;align-items:center;text-align:center;padding:12px}.seat{font:10px var(--mono-font);letter-spacing:.12em}.seat.top{grid-column:2}.seat.bottom{grid-column:2}.backs{display:flex;gap:3px;justify-content:center;margin-top:6px}.backs i{width:12px;height:18px;border:1px solid #dfad80;border-radius:2px;background:#a64932}.discards{min-width:0}.discards .tiles{justify-content:center;margin:7px 0}.watermark{font:34px var(--display-font);color:#f5c4a880}.tiles{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.rack{margin:14px 0 11px;padding-bottom:5px}.tile{border:1px solid #c8ac8e;border-bottom:4px solid #c99d6d;border-radius:5px;background:#fff9eb;color:#325448;display:inline-grid;place-items:center;min-width:32px;width:clamp(31px,4.1vw,48px);height:clamp(44px,5.6vw,62px);padding:2px;flex-shrink:0;box-shadow:0 2px 0 #5f2a1d20}.tile.red{color:#a11c14}.tile.blue{color:#273f68}.tile .mark{font:bold 23px/1 var(--display-font)}.tile small{font:8px var(--mono-font);letter-spacing:.03em}.tile.active{transform:translateY(-6px);background:#ffe9bc;outline:2px solid #a32616}.tile.mini{width:29px;min-width:29px;height:40px}.tile.mini .mark{font-size:17px}.muted{color:var(--muted);font-size:13px}.lesson-nav{display:grid;gap:7px}.lesson-nav button,.prompt{background:transparent;border:1px solid var(--line);color:var(--ink);text-align:left;border-radius:5px;padding:10px 12px}.lesson-nav button[aria-current]{border-color:var(--red);color:var(--red);background:#f9e7d8}.exercise{padding:19px 0}.result{border-left:3px solid var(--red);padding:6px 12px;background:#f4e6d4;margin:10px 0}.chat-log{min-height:235px;max-height:400px;overflow:auto}.message{max-width:88%;margin:0 0 10px;padding:11px 14px;border-radius:7px;background:var(--paper);white-space:pre-wrap}.message.user{margin-left:auto;background:var(--red);color:var(--cream)}form{display:flex;gap:8px;margin-top:14px}input{min-width:0;flex:1;padding:10px;border:1px solid var(--line);border-radius:5px;background:#fffdf7;color:var(--ink)}footer{border-top:1px solid var(--line);display:flex;justify-content:space-between;padding:16px 5vw;color:var(--muted)}
+@media(max-width:700px){header{padding:0 4vw;flex-wrap:wrap;gap:0}.brand{font-size:16px}nav{gap:12px}nav a{font-size:13px;padding:18px 0}.edition{display:none}.columns{grid-template-columns:1fr}.hero .wrap{padding:25px 0}.hero img{right:-53px;opacity:.18}.panel{padding:13px}.felt{min-height:190px;padding:8px;gap:4px}.rack{gap:4px}}
+.felt{grid-template-columns:minmax(48px,1fr) minmax(0,4fr) minmax(48px,1fr)}
+.felt>.seat.top{grid-area:1/2}
+.felt>.seat:nth-child(2){grid-area:2/1}
+.felt>.discards{grid-area:2/2}
+.felt>.seat:nth-child(4){grid-area:2/3}
+.felt>.seat.bottom{grid-area:3/2}
+@media(max-width:440px){.backs i{width:6px;height:13px}.backs{gap:2px}.hero h1{font-size:clamp(35px,10.5vw,55px)}}
+
+/* One lacquer-red stage, with ivory reserved for type, tiles and controls. */
+/* The lacquer red. --ground above is built from these,
+   so the whole app's backdrop follows the three values on this line. */
+:root{--red:#9b0803;--dark:#580604;--cream:#fffaf0;--paper:#790b07;--ink:#fffaf0;--line:#ffc7a864;--muted:#ffded0}
+/* The ground is painted on the canvas, not on the body. A body shorter than the document
+   carries its gradient only as far as its own box, and everything below it came out a
+   slightly different red -- the band under the table. On the root it covers the page
+   however tall it grows, and it is there from the first frame. */
+html{background:var(--ground)}body{background:transparent}
+header{min-height:74px;border:0;gap:20px}
+header nav{margin-inline:auto}
+.edition{margin-left:auto}
+.menu-button{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;border:0;border-radius:9px;background:#fffaf3;color:#291714;font-size:19px}
+.hero .wrap{padding:36px 0 29px;display:grid;grid-template-columns:1fr auto;align-items:end;column-gap:28px}
+.hero .eyebrow{grid-column:1/-1}
+.hero h1{font:clamp(61px,12.6vw,176px)/.84 var(--display-font);letter-spacing:-.078em;margin:12px 0 0;width:max-content;max-width:100%}
+.hero p{font:11px/1.5 var(--mono-font);text-transform:uppercase;letter-spacing:.09em;max-width:220px;padding-bottom:6px}
+.hero img{width:clamp(250px,34vw,470px);top:-125px;right:15vw;opacity:.62;transform:rotate(-36deg);z-index:0}
+.content{border-top:1px solid var(--line);padding-top:23px}
+.columns{gap:28px}
+.panel{background:none;border:0;padding:0;border-radius:0;min-width:0}
+aside.panel{padding:4px 0 10px 22px;border-left:1px solid var(--line)}
+.panel p{color:var(--muted)}
+.tag{color:var(--cream);border-radius:2px}
+.btn{background:var(--cream);color:var(--dark);border-color:var(--cream);font:11px var(--mono-font);letter-spacing:.07em;text-transform:uppercase;min-height:38px}
+.btn.ghost{color:var(--cream);border-color:var(--line)}
+.table{background:var(--dark);border:1px solid var(--line);border-radius:5px}
+.felt{min-height:213px}
+.lesson-nav button,.prompt{border:0;border-bottom:1px solid var(--line);border-radius:0;padding:13px 3px}
+.lesson-nav button[aria-current]{border-color:var(--cream);color:var(--cream);background:#ffffff15}
+.result{border-color:#ffe5c5;background:#600906}
+.message{background:#710906}.message.user{background:var(--cream);color:var(--dark)}
+footer{color:var(--muted)}
+#section-menu{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;background:var(--ground);color:var(--cream);border:0}
+#section-menu .menu-button{position:absolute;top:23px;right:5vw;font-size:27px}
+.menu-links{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:10vh 9vw;gap:18px}
+.menu-links a{font:clamp(45px,10vw,138px)/.9 var(--display-font);letter-spacing:0}
+.menu-links a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.07em}
+@media(max-width:950px){.hero .wrap{grid-template-columns:1fr}.hero p{margin-top:14px;max-width:340px}.hero h1{font-size:clamp(44px,12.6vw,122px)}}
+@media(max-width:700px){header{gap:10px;min-height:64px}header nav{display:none}.menu-button{margin-left:auto}.hero .wrap{padding:30px 0 23px}.hero img{top:-42px;right:-40px}.columns{gap:24px}aside.panel{border-left:0;border-top:1px solid var(--line);padding:15px 0 0}}
+
+/* Play is a table-first view, with the practice coach beside the board. */
+[data-section=play] .hero .wrap{padding-block:16px 21px}
+[data-section=play] .hero h1{font-size:clamp(54px,8vw,105px)}
+[data-section=play] .hero img{top:-151px;width:clamp(230px,29vw,400px)}
+[data-section=play] .columns{grid-template-columns:minmax(0,4fr) minmax(185px,1fr);gap:21px}
+.table-live{padding:8px;background:linear-gradient(160deg,#944227,#480806 60%,#70170f);border:1px solid #e1aa79;border-radius:12px;box-shadow:0 8px 24px #39030350}
+.game-felt{position:relative;display:grid;min-height:410px;grid-template-columns:minmax(48px,1fr) minmax(0,3fr) minmax(48px,1fr);grid-template-rows:95px minmax(115px,1fr) auto;gap:4px 6px;padding:11px;background:radial-gradient(ellipse at 50% 42%,#326c53,#143d30 92%);border-color:#dbb077;border-radius:8px}
+.table-seat{display:grid;justify-items:center;align-content:center;gap:6px;min-width:0}
+.table-seat.opposite{grid-area:1/2}.left-seat{grid-area:2/1}.right-seat{grid-area:2/3}
+.seat-label{display:block;font:11px var(--mono-font);letter-spacing:.12em;text-transform:uppercase;color:#fff0dc;white-space:nowrap}
+.seat-label small{color:#ffc39f;font-size:8px;margin-left:3px}
+.wall{display:flex;justify-content:center;gap:2px;max-width:100%}
+.wall i{display:block;width:clamp(6px,1.5vw,18px);height:21px;background:linear-gradient(#769b66,#42745b);border:1px solid #bdd0a2;border-bottom:3px solid #214c3e;border-radius:3px}
+.left-seat .wall,.right-seat .wall{display:grid;grid-template-columns:repeat(2,auto)}
+.left-seat .wall i,.right-seat .wall i{height:8px;width:17px;border-bottom-width:1px}
+.river{justify-content:center;min-height:24px;gap:3px}
+.river .tile.mini{width:22px;min-width:22px;height:29px;border-bottom-width:2px}
+.river .tile.mini small{display:none}
+.round-marker{grid-area:2/2;justify-self:center;align-self:center;min-width:118px;padding:9px 14px;border:1px solid #d0926b80;background:#12392c;border-radius:5px;display:grid;gap:5px;justify-items:center}
+.round-marker .watermark{font-size:31px;line-height:1.1;color:#e7b28b}
+.round-marker strong{font:10px var(--mono-font);color:#ffceae}
+.player-seat{grid-area:3/1/4/4;display:grid;justify-items:center;gap:6px}
+.player-seat .rack{justify-content:center;margin:4px 0 0;padding:0;width:100%;gap:4px}
+.player-seat .rack .tile{width:clamp(26px,3.65vw,53px);min-width:0;height:clamp(40px,5.1vw,67px);border-bottom-width:5px}
+.game-actions{margin-top:14px}
+.pips{display:grid;grid-template-columns:repeat(3,1fr);align-content:center;justify-items:center;gap:2px;width:75%;max-width:31px}
+.pips-1,.pips-2,.pips-3{grid-template-columns:1fr}
+.pips-4,.pips-6,.pips-8{grid-template-columns:repeat(2,1fr);width:55%}
+.pips i{display:block;width:clamp(3px,.5vw,6px);aspect-ratio:1;border:1px solid currentColor;border-radius:50%;background:#fffaf0}
+.pips.b i{aspect-ratio:.5;background:#3f6b4c;border-radius:2px;border:0}
+.pips i:nth-child(3n){color:#a6251c}.pips.b i:nth-child(3n){background:#aa3724}
+@media(max-width:850px){[data-section=play] .columns{grid-template-columns:minmax(0,1fr)}[data-section=play] aside.panel{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}}
+@media(max-width:510px){.game-felt{min-height:350px;padding:8px;grid-template-rows:80px minmax(105px,1fr) auto}.player-seat .rack .tile{width:clamp(23px,6vw,33px);height:43px}.player-seat .rack{gap:3px}.seat-label{font-size:9px}.river .tile.mini{width:18px;min-width:18px;height:24px}}
+
+/* Glazed ivory faces, warm bevels and jade backs. */
+.game-felt{isolation:isolate;box-shadow:inset 0 0 24px #071d13a0}
+.game-felt::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:.19;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.42' filter='url(%23n)'/%3E%3C/svg%3E")}
+.game-felt .tile{background:linear-gradient(160deg,#fffdfa 8%,#fff7e6 72%,#e9d8b9);border:1px solid #f6e7cc;border-bottom:4px solid #457661;border-radius:7px;box-shadow:inset 0 2px 2px #fff,inset 0 -3px 2px #c79e6555,0 2px 0 #284f40,0 5px 6px #091f1766;color:#17364c}
+.game-felt .tile.red{color:#a01619}
+.game-felt .rack .tile{border-bottom-width:7px;transition:box-shadow .15s ease,background .15s ease}
+.game-felt .tile.active{outline:2px solid #f0c780;background:linear-gradient(#fffef7,#f4deb1);box-shadow:0 7px 10px #0c2619aa}
+.game-felt .tile .mark{font-size:clamp(17px,2.2vw,30px);text-shadow:0 1px #fff}
+.game-felt .tile.mini .mark{font-size:15px}
+.game-felt .tile small{color:#475f58}
+.game-felt .pips.d i{box-shadow:inset 0 0 0 1px #fff5df;background:currentColor;border-color:currentColor;width:clamp(4px,.6vw,8px)}
+.game-felt .pips.b i{width:clamp(3px,.44vw,6px);background:linear-gradient(90deg,#254f39,#588362,#2d5c42)}
+.game-felt .pips.b i:nth-child(3n){background:linear-gradient(90deg,#8b2225,#cb5650,#9e2526)}
+.game-felt .wall i{box-shadow:inset 0 1px #e9efbd70,0 2px 2px #071e16a0}
+@media(prefers-reduced-motion:reduce){.game-felt .rack .tile{transition:none}}
+
+/* The jade base, ivory body and glazed face are separate physical layers. */
+.tile-face{display:grid;justify-items:center;align-content:center;gap:3px;width:100%;height:100%}
+.game-felt .tile{
+  --tile-base:7px;--tile-side:8px;
+  position:relative;isolation:isolate;display:block;padding:0;
+  border:0;border-radius:21% / 16%;
+  background:linear-gradient(104deg,#276b48,#49a36b 26%,#286e48 76%,#174a36);
+  box-shadow:inset 0 -2px 2px #0b3323a0,0 2px 0 #103a2a,0 5px 8px #081d17a8;
+}
+.game-felt .rack .tile{border:0}
+.game-felt .tile::before{
+  content:"";position:absolute;inset:0 0 var(--tile-base);z-index:-1;border-radius:inherit;
+  background:linear-gradient(105deg,#cbb285,#eeddb8 18%,#dbc398 73%,#bea579);
+  box-shadow:inset 0 -2px 2px #a5896177,inset 2px -2px 3px #fff7df80;
+}
+.game-felt .tile-face{
+  position:absolute;inset:0 0 calc(var(--tile-base) + var(--tile-side));width:auto;height:auto;
+  border-radius:inherit;
+  background:linear-gradient(155deg,#fffefa 6%,#fffcf4 49%,#eee4d3 100%);
+  box-shadow:inset 0 2px 2px #fff,inset 0 -2px 3px #d8c7a780,0 2px 3px #bca2757a;
+}
+.game-felt .tile.active{background:linear-gradient(104deg,#276b48,#49a36b 26%,#286e48 76%,#174a36)}
+.game-felt .tile.active .tile-face{background:linear-gradient(155deg,#fffdf3,#f4e1b6)}
+.game-felt .tile .mark{line-height:.93;text-shadow:0 1px #fff,0 -1px #10243b88}
+.game-felt .tile-face small{display:none}
+.game-felt .river .tile.mini{--tile-base:3px;--tile-side:4px;border:0}
+.game-felt .tile.mini .pips{gap:1px;width:75%}
+.game-felt .tile.mini .pips i{width:3px}
+.game-felt .wall i{
+  background:linear-gradient(147deg,#619c70,#2b7350 54%,#215a41);
+  border-color:#78a981;border-bottom-color:#153f2b;
+  box-shadow:inset 0 1px 2px #a8cba780,0 2px 2px #071e1690;
+}
+@media(max-width:510px){.game-felt .rack .tile{--tile-base:4px;--tile-side:5px}}
+
+/* Orthographic tile assets keep the player's ivory faces upright and the bots' hands concealed. */
+.game-felt .tile, .game-felt .tile.active{
+  background:none;box-shadow:none;outline:0;overflow:visible;aspect-ratio:26/34;
+}
+.game-felt .tile::before{content:none}
+.game-felt .tile:focus-visible{outline:2px solid #ffe5a8;outline-offset:3px}
+.game-felt .tile.active .table-face-art{filter:drop-shadow(0 0 3px #fbd285) drop-shadow(0 4px 2px #0a271d)}
+.table-face-art{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 2px #0a271d95)}
+.game-felt .player-seat{width:100%;min-width:0}
+.game-felt .player-seat .rack{flex-wrap:nowrap;gap:clamp(2px,.35vw,6px);padding:7px 2px 3px}
+.game-felt .player-seat .rack .tile{flex:0 1 53px;width:auto;min-width:0;height:auto;padding:0}
+.game-felt .wall{display:flex;gap:2px}
+.game-felt .wall img{display:block;width:clamp(10px,1.75vw,23px);height:auto;aspect-ratio:26/34;filter:drop-shadow(0 2px 1px #0a271d95)}
+.game-felt .left-seat .wall,.game-felt .right-seat .wall{display:grid;grid-template-columns:1fr;justify-items:center;gap:1px}
+.game-felt .left-seat .wall img,.game-felt .right-seat .wall img{width:clamp(15px,2vw,27px);height:clamp(9px,1.1vw,15px);aspect-ratio:auto;object-fit:fill}
+.game-felt{grid-template-rows:90px minmax(230px,1fr) auto}
+@media(max-width:510px){.game-felt{grid-template-rows:70px minmax(170px,1fr) auto}.game-felt .player-seat .rack{gap:2px}}
+
+[data-section=play] .columns{display:block}
+.practice-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,270px);align-items:start;gap:25px}
+.practice-board{position:relative;container-type:inline-size;width:min(100%,720px);aspect-ratio:1;margin:auto;isolation:isolate;border:clamp(7px,1.2vw,14px) solid #713522;border-radius:12px;background:radial-gradient(ellipse at 50% 40%,#255c43,#10382b);box-shadow:inset 0 0 30px #071e16,0 0 0 1px #d99d70,0 10px 28px #41040080;overflow:hidden}
+.practice-board::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.25;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.38'/%3E%3C/svg%3E")}
+.practice-seat{position:absolute;display:grid;justify-items:center;gap:4px;color:#f5e4ca;font:clamp(7px,1.6cqw,11px) var(--mono-font);letter-spacing:.09em;text-transform:uppercase}
+.practice-seat.p0{bottom:3%;left:6%;right:6%}.practice-seat.p2{top:3%;left:9%;right:9%}
+.practice-seat.p1{right:2.6%;top:50%;transform:translateY(-50%)}.practice-seat.p3{left:2.6%;top:50%;transform:translateY(-50%)}
+.practice-hand,.practice-exposed{display:flex;align-items:center;justify-content:center;gap:.35cqw}
+.practice-hand img,.practice-exposed img,.practice-river img{display:block;width:100%;filter:drop-shadow(0 2px 2px #07170cc0)}
+.practice-hand>img,.practice-hand>button{width:5.45cqw;flex:none}
+.practice-hand button{padding:0;border:0;background:none;border-radius:3px;transition:transform .16s ease;opacity:1}
+.practice-hand button[aria-pressed=true]{transform:translateY(-.85cqw);outline:2px solid #f9d782;outline-offset:2px}
+.practice-seat.p1 .practice-hand,.practice-seat.p3 .practice-hand{flex-direction:column;gap:.35cqw}
+.practice-seat.p1 .practice-hand img,.practice-seat.p3 .practice-hand img{width:5.45cqw;height:5.45cqw;object-fit:contain;transform:rotate(90deg)}
+.practice-exposed img{width:2.6cqw}
+.practice-seat.p0 .practice-exposed{grid-row:1}
+.practice-seat.p1 .practice-exposed,.practice-seat.p3 .practice-exposed{max-width:10cqw;flex-wrap:wrap}
+.practice-center{position:absolute;inset:21% 17%;display:grid;grid-template:1fr auto 1fr/1fr auto 1fr;gap:.5cqw;align-items:center;justify-items:center}
+.practice-round{grid-area:2/2;display:grid;justify-items:center;gap:4px;text-align:center;padding:1.4cqw;background:#0b2d21d9;border:1px solid #94aa77;border-radius:5px;font:clamp(7px,1.65cqw,12px) var(--mono-font);color:#ffebcb}
+.practice-round b{font:clamp(13px,5cqw,32px) var(--display-font);color:#e5bd83}
+.practice-round small{font-size:.85em}
+.practice-river{display:flex;justify-content:center;flex-wrap:wrap;gap:.25cqw;align-content:center;max-height:100%;overflow:auto}
+.practice-river img{width:2.85cqw;flex:none}
+.practice-river.r0{grid-area:3/1/4/4}.practice-river.r2{grid-area:1/1/2/4}
+.practice-river.r1{grid-area:2/3}.practice-river.r3{grid-area:2/1}
+.practice-actions{max-width:720px;margin:15px auto 0}
+@media(max-width:850px){.practice-layout{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.practice-hand button{transition:none}}
+
+/* Render-matched materials with independently interactive tile faces. */
+.practice-board{
+  border:0;border-radius:0;background:#10382b url("tile-art/table.webp") center/100% 100% no-repeat;
+  box-shadow:0 10px 28px #41040080;
+}
+.practice-board::before{content:none}
+.practice-hand img.photo-face,.practice-exposed img.photo-face,.practice-river img.photo-face{
+  background:url("tile-art/ivory.webp") center/100% 100% no-repeat;
+}
+/* Every concealed tile and player tile uses the same 26:34 face box. */
+.practice-board{--hand-tile-width:5.05cqw;--hand-tile-height:calc(var(--hand-tile-width) * 34 / 26)}
+.practice-hand img.photo-back,.practice-hand img.photo-front,
+.practice-exposed img.photo-front,.practice-river img.photo-front{border-radius:11.5% / 8.8%}
+.practice-seat.p2{top:4.3%}
+.practice-seat.p0{bottom:5.7%;left:6%;right:6%}
+.practice-seat.p3{left:5.7%}.practice-seat.p1{right:5.7%}
+.practice-seat.p2 .practice-hand,.practice-seat.p0 .practice-hand{grid-row:2}
+.practice-seat.p0>span{grid-row:3}
+.practice-seat.p0 .practice-exposed{grid-row:1}
+.practice-board .practice-hand>img,.practice-board .practice-hand>button,
+.practice-board .practice-hand>button>img{
+  width:var(--hand-tile-width);height:var(--hand-tile-height);object-fit:fill;
+}
+.practice-seat.p1,.practice-seat.p3{top:49%}
+.practice-board .practice-seat.p1 .practice-hand img,
+.practice-board .practice-seat.p3 .practice-hand img{
+  width:var(--hand-tile-width);height:var(--hand-tile-height);object-fit:fill;
+  margin-block:calc((var(--hand-tile-width) - var(--hand-tile-height)) / 2);
+  transform:rotate(90deg);
+}
+.practice-seat.p1 .practice-exposed,.practice-seat.p3 .practice-exposed{
+  position:absolute;top:50%;width:var(--hand-tile-height);transform:translateY(-50%);
+  flex-direction:column;align-items:center;
+}
+.practice-board .practice-exposed img{
+  width:var(--hand-tile-width);height:var(--hand-tile-height);object-fit:fill;
+}
+.practice-board .practice-seat.p1 .practice-exposed img,
+.practice-board .practice-seat.p3 .practice-exposed img{
+  margin-block:calc((var(--hand-tile-width) - var(--hand-tile-height)) / 2);
+}
+.practice-board .practice-seat.p1 .practice-exposed img{transform:rotate(-90deg)}
+.practice-board .practice-seat.p3 .practice-exposed img{transform:rotate(90deg)}
+.practice-seat.p1 .practice-exposed{right:100%}
+.practice-seat.p3 .practice-exposed{left:100%}
+.practice-center{grid-template:1fr 1fr 1fr/1fr 1fr 1fr}
+.practice-status{flex:1 0 100%;color:#ffe4cc;font:11px var(--mono-font);letter-spacing:.08em;text-transform:uppercase}
+.practice-hand img.photo-face,.practice-exposed img.photo-face,.practice-river img.photo-face{
+  border-radius:11.5% / 8.8%;
+}
+
+/* Reserve space for each seat. Discards use the same face art and scale as the rack. */
+/* The floor is what keeps the gold ring on the drawn tile clear of its neighbour: the
+   ring stands 4px off the tile, so 5px leaves it a hair. It used to be 6px, which read
+   as a wider pitch in the player's own hand than anywhere else on the table. */
+.practice-board{--hand-tile-width:5.1cqw;--tile-gap:max(.38cqw,5px)}
+.practice-hand{gap:var(--tile-gap)}
+.practice-seat.p1 .practice-hand,.practice-seat.p3 .practice-hand{gap:var(--tile-gap)}
+.practice-center{
+  inset:22% 22%;
+  grid-template:minmax(0,.8fr) minmax(0,1.85fr) minmax(0,.8fr)/minmax(0,1fr) minmax(0,.25fr) minmax(0,1fr);
+  gap:1.1cqw;
+  align-items:stretch;justify-items:stretch;
+}
+.practice-river{
+  display:grid;grid-template-columns:repeat(auto-fit,var(--hand-tile-width));
+  grid-auto-rows:var(--hand-tile-height);align-content:start;
+  gap:var(--tile-gap);min-width:0;min-height:0;padding:.4cqw;
+  overflow:auto;scrollbar-width:thin;scrollbar-color:#82a781 transparent;
+}
+.practice-river img{
+  width:var(--hand-tile-width);height:var(--hand-tile-height);object-fit:fill;
+}
+.practice-river.r0{align-content:safe end}
+.practice-river.r1,.practice-river.r3{align-content:safe center}
+
+.practice-exposed{gap:var(--tile-gap);min-width:0}
+.practice-exposed img{
+  width:var(--hand-tile-width);height:var(--hand-tile-height);object-fit:fill;flex:none;
+}
+.practice-seat.p0 .practice-exposed,.practice-seat.p2 .practice-exposed{
+  max-width:72cqw;overflow:auto;justify-content:safe center;scrollbar-width:thin;
+}
+.practice-seat.p1 .practice-exposed,.practice-seat.p3 .practice-exposed{
+  width:var(--hand-tile-width);max-width:none;max-height:56cqw;overflow:auto;
+  flex-direction:column;flex-wrap:nowrap;justify-content:safe center;scrollbar-width:thin;
+}
+.practice-center{inset-block:26%}
+
+.practice-reorder{display:flex;gap:6px;flex-wrap:wrap}
+.practice-hand button[draggable=true]{cursor:grab}
+.practice-hand button.tile-drop-target{outline:2px dashed #f9d782;outline-offset:2px}
+
+/* Each discard faces its seat. Side slots reserve the rotated tile footprint. */
+.discard-slot{display:grid;place-items:center;min-width:0;min-height:0}
+.practice-river.r2 .discard-slot img{transform:rotate(180deg)}
+.practice-river.r1,.practice-river.r3{
+  grid-template-columns:var(--hand-tile-height);
+  grid-auto-rows:var(--hand-tile-width);
+}
+.practice-river.r1 .discard-slot,.practice-river.r3 .discard-slot{position:relative}
+.practice-river.r1 .discard-slot img,.practice-river.r3 .discard-slot img{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(var(--discard-angle));
+}
+.practice-river.r1{--discard-angle:-90deg}
+.practice-river.r3{--discard-angle:90deg}
+
+/* Revealed tiles sit inside the wall and face the seat that revealed them. */
+.practice-seat.p2 .practice-hand{grid-row:1}
+.practice-seat.p2 .practice-exposed{grid-row:2}
+.practice-seat.p2 .practice-exposed img{transform:rotate(180deg)}
+.practice-seat.p1 .practice-exposed{
+  width:var(--hand-tile-height);
+  right:calc(100% + (var(--hand-tile-height) - var(--hand-tile-width)) / 2 + var(--tile-gap));
+}
+.practice-seat.p1 .practice-exposed img{
+  transform:rotate(-90deg);
+  margin-block:calc((var(--hand-tile-width) - var(--hand-tile-height)) / 2);
+}
+
+.practice-seat.p3 .practice-exposed{
+  width:var(--hand-tile-height);
+  left:calc(100% + (var(--hand-tile-height) - var(--hand-tile-width)) / 2 + var(--tile-gap));
+}
+.practice-seat.p3 .practice-exposed img{
+  transform:rotate(90deg);
+  margin-block:calc((var(--hand-tile-width) - var(--hand-tile-height)) / 2);
+}
+
+.dragging-hand-tile .practice-river.r0{
+  outline:1px dashed #f9d782;
+  outline-offset:2px;
+}
+.dragging-hand-tile .practice-river.r0.tile-drop-target{
+  background:#f9d78229;
+  outline-style:solid;
+}
+
+/* Keep the latest move readable at a beginner's pace. */
+.practice-hand button.newly-drawn{position:relative;margin-left:.38cqw}
+.practice-hand button.newly-drawn::after{
+  content:"NEW";position:absolute;top:-.7em;left:50%;transform:translateX(-50%);
+  padding:.12em .32em;border-radius:3px;background:#f9d782;color:#292314;
+  font:700 clamp(6px,1.35cqw,10px) var(--mono-font);z-index:1;
+}
+/* The ring stands clear of its tile, so the space between tiles has to be at least as wide
+   as the ring reaches or it lands on the neighbour. Both are fixed pixels and the gap is
+   held at or above their sum, so they cannot drift apart at any table size. */
+.practice-board{--ring-line:2px;--ring-standoff:2px}
+.practice-hand button.newly-drawn img,
+.practice-river .latest-discard img{
+  outline:var(--ring-line) solid #f9d782;outline-offset:var(--ring-standoff);
+}
+/* The tile the coach would throw. Dashed, so at a glance it is never read as the solid
+   ring on the tile you have picked up or the one you have just drawn -- and it sits in
+   the same place as those, so no tile has to move to make room for it. */
+.practice-hand button.coach-pick img{
+  outline:var(--ring-line) dashed #f9d782;outline-offset:var(--ring-standoff);
+}
+.practice-hand button.coach-pick[aria-pressed=true] img{outline:0}
+
+/* The coach's one line, under the table and over the controls: a mark saying who is
+   speaking and a sentence saying what to do with this turn. Pressing it opens the longer
+   reading, so it is a button -- but it is not dressed as one. */
+.practice-tip{
+  display:flex;gap:11px;align-items:baseline;width:100%;
+  margin:13px auto 0;padding:9px 13px;text-align:left;
+  background:#ffffff0f;border:1px solid #f3c4a83d;border-radius:9px;
+  color:#fff1db;font:13.5px/1.45 var(--display-font);
+}
+.practice-tip-mark{
+  flex:none;font:10px var(--mono-font);letter-spacing:.14em;text-transform:uppercase;
+  color:#f9d782;
+}
+.practice-tip b{color:#f9d782;font-weight:400}
+.practice-tip i{color:#ffd9c6;font-style:normal}
+@media(max-width:560px){
+  .practice-tip{gap:8px;padding:8px 10px;font-size:12.5px}
+}
+
+
+
+/* Reserve room for the selection ring without changing any tile's size. */
+.practice-hand button[aria-pressed=true]{
+  margin-inline:5px;
+  z-index:2;
+}
+.practice-hand button.newly-drawn[aria-pressed=true]{
+  margin-inline-start:calc(5px + .65cqw);
+}
+.practice-hand button.newly-drawn[aria-pressed=true] img{outline:0}
+
+.practice-hand button:is(.insert-before,.insert-after){position:relative;z-index:3}
+.practice-hand button:is(.insert-before,.insert-after)::before{
+  content:"";position:absolute;top:-4px;bottom:-4px;width:3px;
+  border-radius:2px;background:#ffdb83;box-shadow:0 0 0 1px #233729;
+  pointer-events:none;
+}
+.practice-hand button.insert-before::before{left:calc(-1.5px - var(--tile-gap) / 2)}
+.practice-hand button.insert-after::before{right:calc(-1.5px - var(--tile-gap) / 2)}
+
+.practice-match{max-width:720px;margin:0 auto 14px}
+.practice-match-score,.practice-match-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px}
+.practice-match-score{padding-bottom:8px;color:#fff1d7}
+.practice-match-score span{font-size:.85rem}
+.practice-match-settings label{display:flex;align-items:center;gap:6px;font-size:.82rem}
+.practice-match-settings select{background:#fff2da;color:#292314;border:1px solid #b99d78;border-radius:4px;padding:.35em .5em;font:inherit}
+.practice-match p{margin:6px 0 0}
+
+.practice-coach h3{margin:.9em 0 .3em;font-size:1rem;color:#fff1d7}
+.practice-coach ul,.practice-coach ol{padding-inline-start:1.25em;font-size:.87rem}
+.practice-coach li{margin:.45em 0}
+.practice-coach summary{cursor:pointer;color:#f9d782}
+.practice-coach details ol{max-height:18rem;overflow:auto}
+
+/* Play uses the lacquer backdrop as an uninterrupted stage for the board. */
+body[data-screen=play]>header{
+  min-height:0;padding:0;border:0;background:none;
+}
+body[data-screen=play]>header>:not(.top-bar),
+body[data-screen=play]>footer,
+#app[data-section=play] .hero{display:none}
+body[data-screen=play] #open-menu{
+  position:fixed;top:clamp(10px,1.5vw,22px);right:clamp(12px,1.55vw,24px);z-index:4;
+  width:clamp(46px,7.5vw,74px);height:clamp(46px,7.5vw,74px);border-radius:clamp(10px,1.4vw,16px);
+}
+#app[data-section=play] .content{
+  width:min(1080px,calc(100% - 48px));padding:clamp(42px,6vw,88px) 0 40px;border:0;
+}
+.practice-layout{grid-template-columns:minmax(0,720px) minmax(220px,280px);gap:clamp(20px,3vw,42px);justify-content:center}
+.practice-match{margin-bottom:12px}
+.practice-match-score strong{font:400 17px var(--display-font)}
+.practice-settings summary{color:#ffe9d8;cursor:pointer;font-size:.82rem;width:max-content}
+.practice-match-settings{padding-top:8px}
+#app[data-section=play] aside.practice-coach{
+  margin-top:42px;padding:18px 0 0 20px;
+  border:0;border-top:1px solid #ffe0cb75;border-left:1px solid #ffe0cb45;
+  color:#fff5e5;background:none;
+}
+#app[data-section=play] .practice-coach .muted{color:#ffe0cb}
+.practice-actions .btn:not(.ghost){background:#fff4e1;color:#641b12;border-color:#fff4e1}
+.practice-actions .btn.ghost,.practice-settings .btn.ghost,.practice-coach .btn.ghost{
+  color:#fff1db;border-color:#f3c4a87a;
+}
+@media(max-width:850px){
+  #app[data-section=play] .content{width:min(720px,calc(100% - 32px));padding-top:70px}
+  .practice-layout{grid-template-columns:minmax(0,1fr);gap:24px}
+  #app[data-section=play] aside.practice-coach{margin-top:0;padding:16px 0 0;border-left:0}
+}
+
+.practice-match-settings label,.practice-settings summary,.practice-match-score span{
+  font-family:var(--mono-font);font-size:.73rem;
+}
+.practice-coach ul,.practice-coach ol{font-size:1rem}
+
+.practice-actions{
+  gap:8px 12px;
+  padding:11px 0 0;
+  border-top:1px solid #ffe0cb55;
+}
+.practice-actions .practice-status{
+  font-size:10px;letter-spacing:.055em;
+}
+.practice-actions .btn{
+  min-height:42px;
+  font:400 21px/1 var(--display-font);
+  text-transform:none;letter-spacing:0;
+}
+.practice-actions .btn:not(.ghost){
+  border-radius:24px;padding:7px 19px;
+}
+.practice-actions .practice-reorder{
+  gap:0;border:1px solid #f3c4a875;border-radius:22px;
+}
+.practice-actions .practice-reorder .btn{
+  width:42px;min-height:40px;padding:0;border:0;border-radius:21px;
+  font:400 16px/1 var(--mono-font);
+}
+.practice-actions .practice-reorder .btn+.btn{
+  border-left:1px solid #f3c4a875;border-radius:0 21px 21px 0;
+}
+/* The way on sits with whatever else is offered, centred under the table. It used to
+   be a underlined link pushed to the far end, from when this bar was a page footer. */
+.practice-actions [data-practice=reset]{padding:4px 0;border:0}
+.practice-actions [data-practice=reset]:disabled{opacity:.42}
+
+/* The coach is on demand, leaving the board centered on its own. */
+.practice-layout{display:block;max-width:720px;margin-inline:auto}
+.practice-coach{
+  width:min(480px,calc(100% - 32px));max-height:calc(100dvh - 40px);
+  overflow:auto;padding:24px 28px;border:1px solid #edbd95;border-radius:12px;
+  color:#fff3df;background:#780b05;box-shadow:0 18px 70px #240300a0;
+}
+.practice-coach::backdrop{background:#21060095}
+.practice-coach h2{margin:.25em 42px .4em 0;font:400 38px/1 var(--display-font)}
+.practice-coach .muted{color:#ffe0cb}
+.coach-close{
+  position:absolute;top:12px;right:12px;width:36px;height:36px;padding:0;border:1px solid #edbd95;
+  border-radius:50%;color:#fff3df;background:transparent;font:24px/1 var(--display-font);
+}
+
+.practice-actions .practice-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* The play screen is one screen, with nothing below the fold. The table is square and takes
+   its size from its width alone, so on a window that is wide but not tall it stood taller
+   than the room left for it and pushed the hand off the bottom. This caps it by the height
+   as well: 272px is what everything else on the screen takes at its largest -- the content's
+   own padding top and bottom, the match bar above the board and the actions row below it,
+   measured at both the wide and the narrow layout. aspect-ratio keeps it square as it
+   shrinks, and the tiles follow, since they are sized in container units off the board. */
+#app[data-section=play]{--table-w:min(100%,720px,calc(100dvh - 272px))}
+/* Anything that sits under the table is set to the table's width, not to a figure of its
+   own: the table shrinks with the window's height, and a fixed width would hang over its
+   edges on any window short enough to cap it. */
+#app[data-section=play] .practice-board,
+#app[data-section=play] .practice-tip{width:var(--table-w)}
+
+/* The menu button is the same control as the one on the hero, so it is the same button:
+   same size, same corner radius, same inset from the edge, and the three bars are the
+   hero's strokes rather than a ☰ glyph, which sat at a different weight and size. The
+   close state takes the same box, so the button does not jump when the menu opens. */
+.menu-button{
+  width:max(44px,4vw);height:max(44px,4vw);border-radius:max(8px,.75vw);
+  background:#fff;color:#202020;cursor:pointer;
+  transition:background .15s ease,transform .1s ease;
+}
+.menu-button:hover{background:#e9e6e6}
+.menu-button:active{transform:scale(.95)}
+.menu-button svg{width:42%;height:42%}
+#section-menu .menu-button{
+  top:max(2.5vw,env(safe-area-inset-top,0px));
+  right:max(2.5vw,env(safe-area-inset-right,0px));
+}
+.top-bar .menu-button,#section-menu .menu-button{
+  width:max(44px,4vw);height:max(44px,4vw);border-radius:max(8px,.75vw);
+}
+@media(max-width:640px){
+  .top-bar,#section-menu .menu-button{
+    top:max(16px,env(safe-area-inset-top,0px));
+    right:max(16px,env(safe-area-inset-right,0px));
+  }
+}
+
+/* The play page is the table and nothing else. The match panel -- score, difficulty and
+   Start new match -- is off the screen, and the buttons that belong to the hand in play
+   ride on the table's bottom edge rather than sitting under it as a row of their own.
+   There is no room for it on the felt: the band between the discards and the player's hand
+   is about 2% of the board, so anything put there covers tiles you are deciding about. It
+   sits under the table instead, and the table is capped so that the free space either side
+   of it -- it is centred, so there is as much below as above -- holds the bar whenever a
+   hand asks something of you. */
+#app[data-section=play] .practice-match{display:none}
+#app[data-section=play] .content{min-height:100dvh;padding-block:0;display:flex;align-items:center}
+/* .columns is a block, so as a flex item it would size to its content and collapse */
+#app[data-section=play] .content>.columns{flex:1 1 auto;min-width:0}
+/* The layout caps itself at 720px for the two-column version with the coach beside the
+   table; on this screen there is only the table, so its own width rule is the only cap. */
+#app[data-section=play] .practice-layout{max-width:none}
+/* The table is centred in the window, so the free space below it is the same as the space
+   above, and the bar has to live inside that lower half. The table is capped by twice the
+   bar's band for that reason -- the half above it is spoken for just as the half below. */
+#app[data-section=play] .practice-layout>section{position:relative;width:100%}
+#app[data-section=play]{--table-w:min(100%,900px,calc(100dvh - 168px))}
+#app[data-section=play] .practice-actions{
+  position:absolute;left:50%;top:100%;bottom:auto;transform:translate(-50%,12px);
+  /* it carried a 1px rule along its top and 11px of padding under it, from when it was a
+     row at the foot of a page rather than a prompt floating under the table */
+  border:0;padding:0;
+  margin:0;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;z-index:2;
+  width:max-content;max-width:100%;
+}
+/* Claim and Pass are one decision, so they are one shape. They were a 24px pill beside a
+   5px rectangle, with 19px of padding against 13px. */
+#app[data-section=play] .practice-actions .btn{border-radius:999px;padding:7px 19px}
+
+/* Learn to play and Mahjong GPT are blank red screens, the same as they are from the
+   hero's menu: the lacquer, and nothing on it but the menu button. */
+body[data-screen=instructions]>header,body[data-screen=gpt]>header{
+  min-height:0;padding:0;border:0;background:none;
+}
+body[data-screen=instructions]>header>:not(.top-bar),body[data-screen=gpt]>header>:not(.top-bar),
+body[data-screen=instructions]>footer,body[data-screen=gpt]>footer{display:none}
+/* One bar in the corner holding the menu and the sound switch. It is the thing that is
+   fixed to the corner now, so the buttons inside it sit in the normal flow. */
+.top-bar{
+  position:fixed;z-index:4;display:flex;align-items:center;
+  top:max(2.5vw,env(safe-area-inset-top,0px));
+  right:max(2.5vw,env(safe-area-inset-right,0px));
+  background:#fff;border-radius:max(8px,.75vw);
+}
+/* the play screen pins and enlarges #open-menu on its own; inside the bar it is just a
+   button again, and the bar does the pinning */
+body[data-screen=play] #open-menu{
+  position:static;top:auto;right:auto;
+  width:max(44px,4vw);height:max(44px,4vw);border-radius:max(8px,.75vw);
+}
+/* A button that does not belong on this screen closes up instead of disappearing, so the
+   bar changes width in a movement rather than a jump -- which is what read as a flicker
+   when you stepped from one screen to the next. */
+.top-bar .menu-button{
+  position:static;background:none;border-radius:inherit;overflow:hidden;min-width:0;
+  width:max(44px,4vw);height:max(44px,4vw);padding:0;
+  transition:width .28s cubic-bezier(.2,.75,.2,1),opacity .2s ease;
+}
+.top-bar .menu-button.shut{width:0;opacity:0;pointer-events:none}
+.top-bar .menu-button[disabled]{opacity:.3}
+.top-bar .menu-button:hover{background:#e9e6e6}
+/* A button that has opened something stays held down while it is open. The gear
+   looked untouched with its own panel sitting over the table. */
+.top-bar .menu-button[aria-expanded="true"]{background:#e0d6c8;box-shadow:inset 0 1px 3px #2917143d}
+#app:is([data-section=instructions],[data-section=gpt]){min-height:100dvh;display:block}
+@media(max-width:640px){
+  body[data-screen=instructions] #open-menu,body[data-screen=gpt] #open-menu{
+    top:max(16px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));
+  }
+}
+
+/* Hovering a menu item underlined it. The hero's menu nudges the word across instead, and
+   this is the same menu, so it does the same. */
+.menu-links a{transition:transform .15s ease,opacity .15s ease}
+.menu-links a:hover{text-decoration:none;transform:translateX(.05em);opacity:.8}
+
+/* One red for every screen here and for the hero, so switching between them does not
+   jump: the table's backdrop was #a00800 against the hero's #9c0400, close enough to
+   read as a flicker rather than a change. The flat colour that did that has gone: the
+   ground now carries the hero's own two reds, so the gradient and the colour behind it
+   can no longer disagree -- which is what drew a band across the page under the table. */
+
+/* The marker stands 2.5px off the tile and is 2px wide, but a river is a scroll box and
+   was clipping whichever side the tile sat against -- at the foot of the player's own pile
+   that is the bottom edge, so the ring came out open. The padding leaves room for it. */
+.practice-river{padding:max(6px,.95cqw)}
+
+/* Four places per seat and no more, so a pile can never outgrow its corner: nothing
+   scrolls, nothing is squeezed, and the marker on the newest discard is drawn whole. */
+.practice-river{overflow:visible;scrollbar-width:none}
+.practice-river::-webkit-scrollbar{display:none}
+/* The side seats lay their discards in one line in front of them, as they did before. */
+.practice-river.r1,.practice-river.r3{justify-content:center;align-content:center}
+
+/* The drop outline marks where a discard lands, so it is the size of the row of places it
+   would land in, not of the whole grid cell that row sits in. The river was stretched to
+   its cell -- three columns wide and a third of the centre tall -- which drew a band far
+   bigger than a tile. Content-sized, and sitting where it sat before. */
+.practice-river.r0,.practice-river.r2{
+  /* auto-fit cannot size a track against a box that is sizing itself to its content, so the
+     four places are named outright -- which they are anyway, now that four is all there is */
+  grid-template-columns:repeat(4,var(--hand-tile-width));
+  justify-self:center;
+}
+.practice-river.r0{align-self:end}
+.practice-river.r2{align-self:start}
+
+/* Every gold mark on the table is one continuous line: these two were dashed, which reads
+   as a line with pieces missing rather than a line around something. The wash behind the
+   drop area is what distinguishes "you may drop here" from "you are over it". */
+.dragging-hand-tile .practice-river.r0{outline:2px solid #f9d782}
+.practice-hand button.tile-drop-target{outline:2px solid #f9d782}
+
+/* A drag marks the tile in your hand, and the discard area it can go to. Nothing marks an
+   empty place on the table: an outline there reads as a tile that is not one.
+   The tile itself is in the air, so it leaves the line entirely and the hand closes up;
+   the gold travels with it, on the picture the cursor carries. */
+.practice-hand button.dragging{display:none}
+.drag-ghost{
+  position:fixed;left:-9999px;top:-9999px;pointer-events:none;
+  padding:2px;border:2px solid #f9d782;border-radius:15% / 11%;
+}
+.drag-ghost img{display:block;border-radius:11.5% / 8.8%}
+
+/* Settings shows the match panel as a card over the table, in the same lacquer the rest of
+   this screen is in; the panel's own text colours are already written for that backdrop. */
+body.settings-open::before{
+  content:"";position:fixed;inset:0;z-index:35;background:#2a0500a8;
+}
+body.settings-open #app[data-section=play] .practice-match{
+  display:block;position:fixed;z-index:36;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(420px,calc(100% - 32px));margin:0;
+  background:#7a0300;color:#fff5e5;
+  border:1px solid #ffe0cb55;border-radius:12px;
+  padding:clamp(18px,3vw,26px);box-shadow:0 18px 50px #1d03007a;
+}
+body.settings-open .practice-settings summary{font-size:.95rem;margin-bottom:6px}
+body.settings-open .practice-match-settings{display:grid;gap:12px}
+
+/* The compass: the four winds around the middle of the felt, each at the seat it belongs
+   to -- yours at the near edge -- with the seat whose turn it is lit. It sits under the
+   tiles and takes no clicks. */
+/* The compass is marked straight onto the felt: the rose and the four winds, each facing
+   its own seat, in the faded ivory the felt's own markings are in. No plate. */
+.practice-compass{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:21.5cqw;height:21.5cqw;z-index:0;pointer-events:none;
+  display:grid;place-items:center;
+  font:400 5cqw/1 'Songti TC','Noto Serif CJK TC','PingFang TC','Hiragino Sans GB',serif;
+  /* It was faint enough that the strokes read as a blur rather than as marks. */
+  color:#f3dcc078;
+}
+.practice-rose{width:7.8cqw;height:7.8cqw;color:#f3dcc082}
+/* The rose is drawn in a 48-unit box and scaled to the felt, which left its hairlines
+   on fractions of a pixel. Held to the device's own pixels they come out as lines. */
+.practice-rose *{vector-effect:non-scaling-stroke}
+/* Each wind sits at its own edge and faces its own seat, the way the indicator does on a
+   table: upright to you at the near edge, and turned a quarter for each seat round, which
+   is the same quarter their discards are laid at. */
+.practice-compass span{position:absolute;transition:color .25s ease}
+.practice-compass .w0{left:50%;bottom:5%;transform:translateX(-50%)}
+.practice-compass .w1{right:5%;top:50%;transform:translateY(-50%) rotate(-90deg)}
+.practice-compass .w2{left:50%;top:5%;transform:translateX(-50%) rotate(180deg)}
+.practice-compass .w3{left:5%;top:50%;transform:translateY(-50%) rotate(90deg)}
+.practice-compass .turn{color:#f9d782c0}
+
+/* the settings card: a row of choices each, and the button */
+.practice-match-settings label{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+/* The tick had the text field's flex:1 on it, so it was a box 222px wide with the tick
+   drawn at its left end -- which is why it sat in the middle of the row rather than
+   lining up with the controls above it. */
+.practice-match-settings .practice-switch input{
+  flex:none;width:18px;height:18px;accent-color:#f9d782;
+}
+/* The native arrow sits hard against the edge of the box. This one is drawn in, a
+   little off the edge, and is the same on every browser. */
+.practice-match-settings select{
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23292314' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1.6 1.9 6 6.3l4.4-4.4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .62em center;background-size:.62em auto;
+  padding-right:1.95em;
+}
+.practice-match-settings .btn{width:100%;margin-top:4px}
+
+/* The line that says whose turn it is was for screen readers only, so the one thing telling
+   you the table is waiting for you was invisible. After a call there is not even a newly
+   drawn tile to point at, and a table waiting for you looks exactly like a stopped one. */
+#app[data-section=play] .practice-actions .practice-status{
+  position:static;width:auto;height:auto;overflow:visible;clip-path:none;
+  flex:0 0 100%;text-align:center;line-height:1.5;color:#ffe4ccd6;
+}
+#app[data-section=play] .practice-actions .btn{line-height:1}
+
+/* One spacing per seat, used by both the hand and whatever that seat has opened, so a
+   set never sits at a different pitch from the tiles beside it. The three concealed
+   walls are tighter than the player's own hand: they carry no marker, so they do not
+   need the gap that keeps a gold ring off its neighbour, and at that gap thirteen of
+   them grew long enough to run into the player's hand at the bottom corners. */
+.practice-seat{--run-gap:var(--tile-gap)}
+.practice-seat.p1,.practice-seat.p2,.practice-seat.p3{--run-gap:max(.3cqw,3px)}
+.practice-seat.p1 .practice-hand,
+.practice-seat.p2 .practice-hand,
+.practice-seat.p3 .practice-hand{gap:var(--run-gap)}
+
+/* An opened set runs along its seat's edge, and the felt only has so much edge. A seat
+   that shows more than its edge holds used to take a smaller scale for those tiles --
+   which left one seat's tiles smaller than everyone else's -- and then, for a while,
+   brought the whole table down with it, which changed the size of the tiles mid-hand.
+   It takes a second row now instead. The tiles never change size, and the rows grow
+   inwards, onto the felt, rather than off the edge of the table. */
+/* An opened set runs along its own seat's edge and stays there. It keeps the one tile
+   size whatever it holds -- the table is never resized around it -- so a seat that has
+   shown more than its edge can carry scrolls along that edge instead. The limits stop
+   each run short of the corners, where it would otherwise reach the next seat's tiles.
+   These rows also used to set a fraction of their own for a gap, which on a small table
+   came out under a pixel and left the tiles touching; the gap is the seat's now.
+   The side columns must keep the width of a turned tile: the offset that stands them
+   clear of their own hand is measured from it, and at any other width they lean in. */
+/* Nothing scrolls: at this tile size a seat's whole set fits its own edge, so every
+   tile a seat has shown is on the table and none is cut off by the end of a box. */
+.practice-seat.p0 .practice-exposed,.practice-seat.p2 .practice-exposed{
+  gap:var(--run-gap);overflow:visible;flex-wrap:nowrap;max-width:none;
+  justify-content:safe center;
+}
+.practice-seat.p1 .practice-exposed,.practice-seat.p3 .practice-exposed{
+  gap:var(--run-gap);overflow:visible;flex-wrap:nowrap;max-height:none;
+  width:var(--hand-tile-height);
+  justify-content:safe center;
+}
+
+/* Flowers are not part of a set, so they take a line of their own, one step further out
+   from the seat than the melds. A seat holding none takes up no room at all.
+   The flower line carries the meld line's class so it inherits its shape, which means
+   every rule here has to name both or the meld rule wins on a tie and the two end up
+   laid on top of each other. */
+.practice-seat.p0 .practice-exposed{grid-row:2}
+.practice-seat.p0 .practice-exposed.practice-bonus{grid-row:1}
+.practice-seat.p0 .practice-hand{grid-row:3}
+.practice-seat.p0>span{grid-row:4}
+.practice-seat.p2 .practice-hand{grid-row:1}
+.practice-seat.p2 .practice-exposed{grid-row:2}
+.practice-seat.p2 .practice-exposed.practice-bonus{grid-row:3}
+.practice-seat.p1 .practice-exposed.practice-bonus{
+  right:calc(100% + (var(--hand-tile-height) - var(--hand-tile-width)) / 2
+    + var(--tile-gap) + var(--hand-tile-height) + var(--run-gap));
+}
+.practice-seat.p3 .practice-exposed.practice-bonus{
+  left:calc(100% + (var(--hand-tile-height) - var(--hand-tile-width)) / 2
+    + var(--tile-gap) + var(--hand-tile-height) + var(--run-gap));
+}
+
+/* ---- Mahjong GPT: the coach you can ask --------------------------------------------
+   One red surface you talk to. The coach's words sit straight on the felt-red with no
+   card around them, and only your own questions are set in one, so the thread reads as a
+   conversation held on the page rather than a chat window dropped onto it. */
+#app[data-section=gpt]{display:flex;flex-direction:column;height:100dvh;min-height:100dvh;overflow:hidden}
+.gpt{
+  flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  width:min(760px,calc(100% - 2*max(20px,4vw)));margin-inline:auto;
+  padding-block:max(18px,3.2vh) max(14px,2.4vh);
+}
+.gpt-log{
+  flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;
+  display:flex;flex-direction:column;gap:19px;padding:18px 2px 10px;
+  scrollbar-width:thin;scrollbar-color:#ffc7a85c transparent;
+}
+.gpt-line{white-space:pre-wrap}
+.gpt-line:first-child{margin-top:auto}
+/* your own question: the one thing on the screen that is held in a card */
+.gpt-line.you{
+  align-self:flex-end;max-width:44ch;
+  background:#ffffff17;border:1px solid #ffc7a840;border-radius:15px 15px 4px 15px;
+  padding:9px 15px;color:var(--cream);font:15px/1.45 var(--mono-font);
+}
+/* the coach: type on the red, nothing around it */
+.gpt-line.coach{align-self:stretch;max-width:none;color:#fff3e4;font:19px/1.5 var(--display-font)}
+.gpt-line.coach.off,.gpt-line.coach.note{color:#ffcdb8;font-style:italic}
+.gpt-wait{display:inline-block;color:#ffcdb8;letter-spacing:.2em}
+.gpt-wait::after{content:"···";animation:gpt-wait 1.1s ease-in-out infinite}
+@keyframes gpt-wait{0%,100%{opacity:.3}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.gpt-wait::after{animation:none}}
+/* tiles shown inside an answer, in the table's own face art */
+.gpt-tiles{
+  display:inline-flex;gap:3px;vertical-align:middle;margin:7px 7px 7px 0;
+  padding:6px 7px;background:#ffffff12;border-radius:9px;
+}
+.gpt-tiles img{
+  display:block;width:clamp(26px,3.3vw,37px);height:auto;
+  border-radius:11.5% / 8.8%;filter:drop-shadow(0 2px 3px #3a040280);
+}
+.gpt-ask{
+  flex:none;display:flex;gap:10px;align-items:center;margin:0;
+  padding-top:13px;border-top:1px solid var(--line);
+}
+.gpt-ask:focus-within{border-top-color:#ffd9c6}
+.gpt-ask input{
+  flex:1;min-width:0;background:transparent;border:0;border-radius:0;
+  color:var(--cream);font:17px var(--display-font);padding:10px 2px;
+}
+.gpt-ask input::placeholder{color:#ffcbb68f}
+.gpt-ask input:focus-visible{outline:0;box-shadow:inset 0 -2px 0 var(--cream)}
+.gpt-ask input:disabled{opacity:.5}
+.gpt-ask button{
+  flex:none;background:var(--cream);color:var(--dark);border:0;border-radius:999px;
+  padding:11px 21px;font:11px var(--mono-font);letter-spacing:.09em;text-transform:uppercase;
+  transition:background .12s ease;
+}
+/* asked -- by the button or by the return key, it answers the same way */
+.gpt-ask button:active,.gpt-ask button.pressed{background:#fff;color:#2b0502}
+/* and keyboard focus is a halo in the screen's own colours, not the page's gold ring */
+.gpt-ask button:focus-visible{outline:0;box-shadow:0 0 0 3px #ffffff59}
+@media(prefers-reduced-motion:reduce){.gpt-ask button{transition:none}}
+@media(max-width:640px){.gpt-line.coach{font-size:17px}}
+/* The gear sets up a match, and there is no match on the school or the coach screens,
+   so it is not on them at all. */
+/* which screen keeps which button is set on the body, in one place */
+/* Which buttons a screen keeps is decided in the router, which marks the rest shut; they
+   then close up rather than vanishing, so the bar changes width in a movement. */
+/* a button the screen has no use for closes up rather than vanishing, so the pill
+   changes width in a movement -- the jump is what read as a flicker */
+.top-bar .menu-button.shut{width:0;opacity:0;pointer-events:none}
+.top-bar{overflow:hidden}
+
+/* ---- small screens ---------------------------------------------------------------
+   Three things only turn up once the screen is small. A long run of tiles has to be
+   allowed onto a second line instead of running off the side; the thread has to begin
+   below the floating bar rather than slide under it, which it does on anything narrower
+   than a laptop; and on a short landscape screen the table was giving a third of the
+   height away to the chrome around it. */
+.gpt-tiles{flex-wrap:wrap}
+@media(max-width:1000px){
+  .gpt-log{padding-top:calc(max(2.5vw, env(safe-area-inset-top,0px)) + 58px)}
+}
+@media(max-height:560px){
+  #app[data-section=play]{--table-w:min(100%,980px,calc(100dvh - 104px))}
+}
+/* The gap between hand tiles has a floor in pixels, so the ring around a tile cannot
+   touch its neighbours on a big table. On a small one those floors add up to more than
+   the rack is wide and the last tile was being cut off at the edge of the board, so the
+   tile takes whatever width is left once the gaps have had theirs. */
+.practice-board{
+  /* Sized so a seat that has opened four sets still lays them all along its own edge:
+     twelve tiles and their gaps inside the span between the near and far seats. The
+     hand of fourteen across the bottom was the old limit, and is no longer the tight one. */
+  --hand-tile-width:min(4.5cqw, calc((88cqw - 13 * var(--tile-gap) - .65cqw) / 14));
+}
+
+/* ---- Learn to play: the school ----------------------------------------------------
+   One lesson at a time, held in the middle of the screen, and never taller than the
+   screen -- there is no scrolling here, so the type and the tiles are sized against the
+   viewport and a lesson that would not fit was shortened instead. Nothing appears: the
+   words rise and the tiles are dealt one after another. */
+#app[data-section=instructions]{display:flex;flex-direction:column;height:100dvh;min-height:0;overflow:hidden}
+/* The page runs the whole width and the measure is set on the lesson inside it. The two
+   used to be the same box, and that box clips what overflows it -- so a row let out to
+   the width of the window was cut off at the edge of the measure instead. */
+.learn{
+  flex:1 1 auto;min-height:0;display:flex;flex-direction:column;width:100%;
+  padding-block:max(12px,1.8vh) max(10px,1.6vh);
+}
+.learn-body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex}
+/* The lesson is a container, so anything inside it can be sized against the measure it
+   is laid out in rather than against the screen -- the two part company above 965px,
+   where the measure stops growing at 900. */
+.learn-inner{
+  margin:auto;width:min(900px,calc(100% - 2*max(16px,3.4vw)));
+  text-align:center;container-type:inline-size;
+}
+/* A lesson arrives rather than snapping on, but it has to be THERE: half a second of
+   staged fade meant every step of the school began with a wait. The movement is kept and
+   the time taken out -- the whole screen is up inside a quarter of a second. */
+@keyframes learn-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes learn-deal{from{opacity:0;transform:translateY(6px) scale(.94)}to{opacity:1;transform:none}}
+.learn-inner>*{animation:learn-rise .22s cubic-bezier(.2,.75,.2,1) backwards}
+.learn-inner>*:nth-child(1){animation-delay:0s}
+.learn-inner>*:nth-child(2){animation-delay:.025s}
+.learn-inner>*:nth-child(3){animation-delay:.05s}
+.learn-inner>*:nth-child(4){animation-delay:.07s}
+.learn-inner>*:nth-child(5){animation-delay:.09s}
+.learn-body h2{
+  font:clamp(23px,min(4.2vw,4.6vh),42px)/1.05 var(--display-font);letter-spacing:-.03em;
+  color:var(--cream);margin:0 0 .35em;
+}
+/* Prose is held to a readable measure. A row of tiles is not prose, and a lesson that
+   shows one -- or whose sentence is meant to stay on one line -- takes the whole width.
+   It is a container either way, so a tile in the text is measured against the same width
+   as the tile in the task below it, and the two come out the same size. */
+.learn-say{
+  white-space:pre-wrap;color:#fff3e4;margin:0 auto .9em;max-width:64ch;
+  font:clamp(14px,min(1.9vw,2.1vh),18px)/1.5 var(--display-font);
+  container-type:inline-size;
+}
+/* A sentence meant to stay on one line is set to its measure rather than to the screen:
+   18px is more than the longest of them fits across, and the measure is capped at 900px
+   however wide the screen is, so a fixed size would wrap there too. */
+.learn-say.wide{max-width:none;font-size:clamp(14px,1.8cqw,18px)}
+/* An example in the text is drawn at the size of the tiles the lesson asks you to tap.
+   A lesson that asks nothing keeps its examples at the size of the text around them. */
+.learn-inner:has(.learn-play) .learn-say .learn-tiles img,
+.learn-inner:has(.learn-row) .learn-say .learn-tiles img,
+.learn-inner:has(.learn-tray) .learn-say .learn-tiles img{width:var(--tile)}
+/* A whole hand written into a sentence is a hand like any other: read along one line,
+   and drawn at the one size, like everything else. */
+.learn-tiles:has(img:nth-child(14)) img{width:var(--tile)}
+.learn-tiles{display:inline-flex;flex-wrap:wrap;gap:3px;vertical-align:middle;margin:4px 7px 4px 0;padding:4px 5px;background:#ffffff12;border-radius:7px}
+.learn-tiles img{
+  display:block;width:clamp(26px,min(3.8vw,4.2vh),42px);height:auto;border-radius:11.5% / 8.8%;
+  filter:drop-shadow(0 2px 3px #3a040280);animation:learn-deal .24s cubic-bezier(.2,.75,.2,1) backwards;
+}
+.learn-ask{
+  font:clamp(9px,1.2vh,11px) var(--mono-font);letter-spacing:.09em;text-transform:uppercase;
+  color:#ffd9c9;margin:0 0 max(13px,.75em);
+}
+.learn-row,.learn-tray{
+  display:flex;flex-wrap:nowrap;justify-content:center;gap:max(7px,.9vw);
+  margin-bottom:.9em;min-height:1px;
+  container-type:inline-size;--badge:clamp(12px,3.2cqw,20px);
+}
+/* The size of a tile, and there is only the one: every tile the school puts in front of
+   you is drawn at it, in every lesson -- a suit counted out, a set named, a hand to find
+   something in. Three things hold it down. The size a tile is comfortably handled at.
+   Nine across the measure the words are set in, which is the longest row that stays
+   inside it. And fourteen across the window, which is the longest row there is. */
+.learn-inner{--tile:min(clamp(28px,min(8vw,10vh),92px),9.6cqw,calc((100vw - 80px) / 14))}
+/* Kept as a name of its own because the rows of thirteen and the kinds underneath them
+   are built out of it, but it is that same size. */
+.learn-inner{--row:var(--tile)}
+.learn-inner:has(.learn-bins) .learn-tray{flex-wrap:nowrap;gap:max(4px,.5cqw) .5cqw}
+/* Thirteen tiles: one row like a rack where the screen allows, wrapping where it does
+   not. The gap has no pixel floor here -- thirteen of those is half a tile's width, and
+   the row would no longer fit the measure it was sized against. */
+.learn-row.hand,.learn-tray.hand{flex-wrap:nowrap;gap:max(7px,.5cqw) .5cqw;--badge:clamp(11px,2.3cqw,18px)}
+/* A rack of thirteen, or a whole hand of fourteen, is wider than the measure the words
+   are set in. Rather than take the tiles down until they fit it, those rows are let out
+   of the measure and run the width of the window instead -- which is what lets a tile be
+   the same size in these lessons as in every other. */
+.learn-inner .learn-row.hand,.learn-inner .learn-tray.hand,
+.learn-inner:has(.learn-bins) .learn-tray,
+.learn-inner .learn-bins{
+  width:100vw;max-width:100vw;margin-inline:calc(50% - 50vw);
+  padding-inline:10px;box-sizing:border-box;
+}
+/* The rows above centre themselves and stop where the thirteen tiles stop. A grid fills
+   whatever box it is given, so this one is given the same width to fill: thirteen tiles
+   and their twelve gaps, read off the window exactly as the tray reads them. */
+.learn-inner .learn-bins{
+  padding-inline:max(10px, calc((100vw - 13 * var(--row) - 12 * max(4px, .5vw)) / 2));
+}
+/* The gap goes with it: a row set out to the width of the window read its gap off that
+   same width, and thirteen of those put the far end of the hand past the screen. */
+.learn-inner .learn-tiles:has(img:nth-child(10)){
+  display:flex;justify-content:center;flex-wrap:nowrap;gap:max(3px,.3vw);
+  background:none;border-radius:0;box-sizing:border-box;
+  width:100vw;max-width:100vw;margin:4px calc(50% - 50vw);padding:0 10px;
+}
+.learn-row.hand .learn-tile,.learn-tray.hand .learn-tile{outline-offset:1px}
+.learn-row.hand .learn-tile img,.learn-tray.hand .learn-tile img{width:var(--row)}
+.learn-tray{min-height:clamp(46px,9vh,80px);align-items:center}
+.learn-tray-done{font:10px var(--mono-font);letter-spacing:.1em;text-transform:uppercase;color:#ffcbb68f}
+.learn-tile{
+  position:relative;background:none;border:0;padding:0;border-radius:9px;line-height:0;
+  outline:2px solid transparent;outline-offset:3px;
+  transition:transform .14s cubic-bezier(.2,.75,.2,1),outline-color .14s ease,opacity .14s ease;
+}
+/* Dealt out when the lesson arrives, and never again: moving one tile into a bin
+   redraws this block, and without `fresh` the rest would all be thrown down afresh. */
+.learn-play.fresh .learn-tile,
+.learn-play.fresh .learn-bin-tiles img{animation:learn-deal .24s cubic-bezier(.2,.75,.2,1) backwards}
+.learn-tile img{display:block;width:var(--tile);height:auto;border-radius:11.5% / 8.8%;filter:drop-shadow(0 3px 5px #3a040288)}
+.learn-tile[draggable]{cursor:grab}
+.learn-tile:hover{transform:translateY(-3px)}
+.learn-tile.on,.learn-tile.num,.learn-tile.held{outline-color:#f9d782;transform:translateY(-5px)}
+.learn-tile.dragging{opacity:.35}
+.learn-tile:focus-visible{outline-color:var(--cream)}
+/* the order a tile was tapped in, inside its own corner: outside it, it crossed the
+   line of type above and the tile beside it */
+.learn-tile[data-order]::after{
+  content:attr(data-order);position:absolute;bottom:6%;right:6%;
+  display:grid;place-items:center;border-radius:50%;
+  width:var(--badge);height:var(--badge);
+  background:#f9d782;color:#2b0502;
+  font:600 calc(var(--badge) * .62)/1 var(--mono-font);
+}
+/* the four kinds a tile is dragged or tapped into */
+/* A kind is a slot the size of a tile, named underneath. The tiles put in it are drawn
+   small so the slot keeps a tile's footprint however many it is holding. */
+/* Three kinds to a row -- the three suits, then the three kinds of honour -- rather than
+   however many happen to fit. The box is a container so that a tile inside it is measured
+   against the same width the tray is, which is what keeps the two the same size. */
+.learn-bins{
+  display:grid;grid-template-columns:repeat(3,1fr);justify-items:stretch;
+  gap:max(8px,1.3vw) max(8px,1.1vw);
+  /* As wide as the row of tiles above, which is thirteen tiles and the twelve gaps
+     between them -- the same two values the tray is built from, read against the same
+     width, so the kinds line up with the tiles whatever size the row comes out at. */
+  width:min(100%,calc(13 * var(--row) + 12 * .5cqw));
+  margin:0 auto .9em;--slot:var(--tile);container-type:inline-size;
+}
+.learn-bin{
+  display:flex;flex-direction:column-reverse;gap:5px;align-items:center;text-align:center;
+  /* Three tiles across, so a whole kind lies in its box on one line. The floor is what
+     three boxes and their gaps still fit across the narrowest phone. The 12px is the
+     two gaps between the three tiles plus the box's own dashed border, which is inside
+     the width and was folding the third tile onto a second row. */
+  width:100%;padding:0;background:none;border:0;color:#ffe3d4;
+  font:clamp(8px,1.1vh,10px)/1.25 var(--mono-font);letter-spacing:.06em;text-transform:uppercase;
+  transition:transform .16s ease;
+}
+.learn-bin-tiles{
+  display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:4px;
+  /* One row of tiles deep. No kind in this hand takes more than three, and three stand
+     side by side in a box, so a second row's worth of empty space was the whole lower
+     half of the screen once the tiles came up to the size they are handled at. */
+  width:100%;min-height:calc(var(--slot) * 1.5 + 8px);
+  border-radius:9px;border:1px dashed #ffc7a84d;background:#ffffff0d;
+  transition:background .16s ease,border-color .16s ease;
+}
+.learn-bin.open .learn-bin-tiles{border-style:solid;border-color:#f9d78299;background:#ffffff16}
+.learn-bin.open:hover,.learn-bin.over{transform:translateY(-2px)}
+.learn-bin.open:hover .learn-bin-tiles,.learn-bin.over .learn-bin-tiles{border-color:#f9d782;background:#f9d7821f}
+.learn-bin-tiles img{width:var(--slot);height:auto;border-radius:11.5% / 8.8%;filter:drop-shadow(0 2px 3px #3a040280)}
+/* a tile sitting in a kind can be taken out again, by hand or by tap */
+.placed-tile{cursor:grab;touch-action:none}
+.placed-tile.lifting{opacity:.28}
+/* only the tile that has just landed is dealt, not everything already in the bin */
+.learn-bin-tiles img.just{animation:learn-deal .32s cubic-bezier(.2,.75,.2,1) backwards}
+/* The answers stand side by side, each on a line of its own words: read across, they
+   are the choice. They fall into a column only where the row will not fit. */
+.learn-choices{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:.9em;align-items:center;justify-content:center}
+.learn-choice{
+  background:transparent;border:1px solid #ffc7a84d;color:#ffe9dd;border-radius:12px;
+  padding:9px 15px;font:clamp(13px,1.9vh,16px)/1.3 var(--display-font);max-width:min(100%,56ch);
+  white-space:nowrap;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease;
+}
+.learn-choice:hover{background:#ffffff14;border-color:#ffc7a8a6;color:#fff;transform:translateY(-2px)}
+.learn-choice.right{border-color:#f9d782;background:#f9d7821f;color:#fff}
+.learn-note{
+  margin:.2em auto 0;max-width:62ch;color:#ffcdb9;
+  font:clamp(13px,1.9vh,16px)/1.4 var(--display-font);
+  animation:learn-rise .24s cubic-bezier(.2,.75,.2,1) backwards;
+}
+.learn-note.right{color:#fff4e6}
+.learn-acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:1.4em 0 0}
+.learn-go{
+  background:var(--cream);color:var(--dark);border:0;border-radius:999px;
+  padding:10px 21px;font:11px var(--mono-font);letter-spacing:.09em;text-transform:uppercase;
+  display:inline-flex;align-items:center;
+}
+.learn-go:active{background:#fff}
+.learn-back{
+  background:transparent;border:1px solid #ffc7a84d;color:#ffe3d4;border-radius:999px;
+  padding:9px 17px;font:11px var(--mono-font);letter-spacing:.09em;text-transform:uppercase;
+}
+.learn-back:hover{background:#ffffff14;color:#fff}
+.learn-end h2{font-size:clamp(28px,min(5vw,5.4vh),48px)}
+
+/* ---- a page that is several separate statements ------------------------------------
+   Four things about the wall, or about a turn, are four things. Centred and run together
+   they read as one block nobody finishes; down a column, each starting in the same place
+   with a hairline between, each can be read and left. */
+.learn-say.steps{
+  max-width:62ch;text-align:left;white-space:normal;margin-bottom:1.4em;
+}
+.learn-say.steps p{margin:0;padding:.6em 0;border-top:1px solid #ffffff21}
+.learn-say.steps p:first-child{border-top:0;padding-top:0}
+.learn-say.steps p:last-child{padding-bottom:0}
+/* Tiles the page is about, shown as a row under the words rather than set inside them,
+   and each with its name under it: on the seats page what matters is which tile is which
+   seat, and a wind tile does not say so unless you can read the character. */
+.learn-named{display:flex;flex-wrap:wrap;justify-content:center;gap:max(8px,1.2vw);margin:.7em 0 1.3em}
+.learn-named span{display:flex;flex-direction:column;align-items:center;gap:.45em}
+.learn-named img{
+  display:block;width:var(--tile);height:auto;border-radius:11.5% / 8.8%;
+  filter:drop-shadow(0 3px 5px #3a040288);
+  animation:learn-deal .24s cubic-bezier(.2,.75,.2,1) backwards;
+  animation-delay:calc(var(--i,0) * .22s);
+}
+.learn-named b{
+  font:clamp(10px,1.3vh,12px) var(--mono-font);font-weight:400;letter-spacing:.12em;
+  text-transform:uppercase;color:#f9d782;
+}
+
+/* ---- what a hand is worth ----------------------------------------------------------
+   Three rungs, each with the shape that earns it named above and explained below -- the
+   way the six kinds are shown at the start, because a list of scoring hands written as a
+   paragraph is a list nobody reads. */
+/* Held to a measure of their own: stretched across the whole lesson the three stood so
+   far apart they read as three separate things rather than one scale. */
+.learn-cards{
+  display:grid;grid-template-columns:repeat(3,auto);justify-content:center;align-items:start;
+  gap:max(16px,3.4cqw);margin:.3em auto .9em;max-width:100%;
+}
+.learn-card{display:flex;flex-direction:column;align-items:center;gap:.45em}
+.learn-card b{
+  font:clamp(10px,1.3vh,12px) var(--mono-font);font-weight:400;letter-spacing:.12em;
+  text-transform:uppercase;color:#f9d782;
+}
+.learn-card .learn-tiles{margin:0;background:none;padding:0;gap:max(3px,.4cqw)}
+.learn-card .learn-tiles img{width:var(--tile)}
+.learn-card small{
+  color:#ffd9c9;max-width:25ch;
+  font:clamp(11px,min(1.5vw,1.7vh),14px)/1.4 var(--display-font);
+}
+@media(max-width:620px){.learn-cards{grid-template-columns:1fr;gap:10px}}
+
+
+/* ---- a suit introduced -------------------------------------------------------------
+   The line arrives in the middle, the tiles it is about are dealt under it, and the two
+   of them move aside together for the question. The reference row is drawn at the size
+   of the tiles you will be handling, so you are comparing like with like. */
+.learn-inner.intro>*{animation:none}
+.learn-ref{transition:transform .95s cubic-bezier(.22,.72,.2,1)}
+/* The line is read on its own first, in the middle of the screen: it starts half of
+   everything below it further down, measured when the lesson is drawn, and gives that up
+   as the tiles begin to arrive -- so it rises out of their way rather than the row being
+   dealt over the top of it. It is a shade larger while it has the screen to itself. */
+.learn-inner.intro:not(.shown) .learn-ref{transform:translateY(var(--lift,0px)) scale(1.03)}
+/* The title has the width of the whole lesson to land in, which is what keeps it on one
+   line; it used to share the screen with the question, and half a measure wrapped it. */
+.learn-inner.intro h2{opacity:0;transition:opacity .75s ease}
+.learn-inner.intro.lit h2{opacity:1}
+/* The nine are a row, not a paragraph: the 64ch measure that keeps prose readable is
+   narrower than nine tiles, and would fold the suit onto a second line. */
+.learn-inner.intro .learn-say{max-width:none;margin-bottom:.5em}
+/* Prose is not a row of tiles: it keeps its measure on these pages too. */
+.learn-inner.intro .learn-say.steps{max-width:62ch;margin-bottom:1.4em}
+/* Then the suit is counted out, a tile at a time, so you watch it climb from 1 to 9
+   rather than meeting all nine at once. */
+.learn-inner.intro .learn-tiles img{
+  opacity:0;transform:translateY(9px) scale(.9);animation:none;
+  transition:opacity .3s ease,transform .34s cubic-bezier(.2,.75,.2,1);
+}
+.learn-inner.intro.shown .learn-tiles img{opacity:1;transform:none;transition-delay:calc(var(--i,0) * var(--step,170ms))}
+/* A whole hand is a long row to wait on, so it is counted out quicker than a suit. */
+.learn-tiles:has(img:nth-child(10)){--step:110ms}
+/* The named tiles are counted out the same way, each told its place in the row -- and a
+   tile's name arrives with the tile, not before it. */
+.learn-inner.intro .learn-named img,
+.learn-inner.intro .learn-named b{
+  opacity:0;transform:translateY(9px) scale(.9);animation:none;
+  transition:opacity .3s ease,transform .34s cubic-bezier(.2,.75,.2,1);
+}
+.learn-inner.intro.shown .learn-named img,
+.learn-inner.intro.shown .learn-named b{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 170ms)}
+/* A page whose body is words rather than tiles waits the same way: the title is read in
+   the middle on its own, and what it is about follows it up the screen. */
+.learn-inner.intro .learn-say.steps,
+.learn-inner.intro .learn-cards,
+.learn-inner.intro .learn-acts{opacity:0;transition:opacity .55s ease}
+.learn-inner.intro.shown .learn-say.steps,
+.learn-inner.intro.shown .learn-cards{opacity:1}
+.learn-inner.intro.aside .learn-acts{opacity:1}
+.learn-inner.intro:not(.aside) .learn-acts{pointer-events:none}
+/* A tap skips the count: the delays would otherwise still be running. */
+.learn-inner.intro.aside .learn-tiles img:nth-child(n),
+.learn-inner.intro.aside .learn-named img:nth-child(n),
+.learn-inner.intro.aside .learn-named b:nth-child(n){transition-delay:0ms}
+.learn-inner.intro .learn-ask,.learn-inner.intro .learn-play{opacity:0;transition:opacity .7s ease}
+.learn-inner.intro.aside .learn-ask,.learn-inner.intro.aside .learn-play{opacity:1}
+.learn-inner.intro:not(.aside) .learn-play{pointer-events:none}
+.learn-inner.intro .learn-tiles{background:none;padding:0;gap:max(5px,.6vw);margin:.4em 0}
+
+/* ---- the opening tour --------------------------------------------------------------
+   The line arrives in the middle of the screen and lifts to make room; then each suit is
+   brought on in the centre and steps aside for the next, so you meet them one at a time.
+   cqw is read off the stage itself, which is what sets how far they step. */
+.stage{
+  position:relative;container-type:inline-size;
+  height:clamp(230px,56vh,460px);
+  /* The rows stand well out from the middle even while the tour runs: the middle is
+     where each kind lands, and at the old distance the one arriving came up almost
+     touching the row already parked above it. */
+  --dx:31cqw;--dy:clamp(72px,14.5vh,124px);--park:.56;
+}
+@media(max-width:620px){.stage{--park:.46}}
+.stage-line{
+  position:absolute;left:50%;top:50%;width:min(900px,96%);margin:0;text-align:center;
+  transform:translate(-50%,-50%);opacity:0;color:var(--cream);
+  /* The same size as every lesson's own first line -- this one is read in the same place
+     and goes on to be replaced by them, so it is set to the same type. */
+  font:clamp(23px,min(4.2vw,4.6vh),42px)/1.1 var(--display-font);letter-spacing:-.03em;
+  transition:transform 1.1s cubic-bezier(.22,.7,.18,1),opacity .8s ease;
+}
+.stage.lit .stage-line{opacity:1}
+/* The line is read in the middle of the screen, then rises out of the way to show what
+   it was talking about. The tiles still wait for it to clear before they land. */
+.stage.said .stage-line{
+  opacity:0;transform:translate(-50%,-50%) translateY(-18vh);
+  transition:opacity .72s ease,transform .95s cubic-bezier(.22,.7,.18,1);
+}
+.stage-group{
+  position:absolute;left:50%;top:56%;width:max-content;max-width:94cqw;text-align:center;
+  transform:translate(-50%,-50%) scale(.8);opacity:0;
+  transition:transform 1.05s cubic-bezier(.22,.7,.18,1),opacity .75s ease,top .9s ease;
+}
+.stage-tiles{display:flex;justify-content:center;gap:4px}
+/* the floor is set by the widest group -- four tiles and three gaps have to sit inside
+   a parked group on the narrowest phone, and min-width:0 stops a tile refusing to give */
+.stage-tiles img{width:clamp(38px,min(6.8vw,8.4vh),76px);min-width:0;height:auto;border-radius:11.5% / 8.8%;filter:drop-shadow(0 4px 7px #3a04028c)}
+.stage-group b{display:block;margin-top:.55em;font:clamp(10px,1.3vh,12px) var(--mono-font);font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:#f9d782}
+/* Each kind arrives in the middle at the size it is taught at, then takes its place in
+   the six -- the three suits in a row above the middle, the three kinds of honour below
+   it -- so that by the end the whole set is on the screen at once. Nothing is parked in
+   the middle, which is the one place a tile is ever arriving. */
+.stage .g0,.stage .g3{--px:calc(-1 * var(--dx))}
+.stage .g1,.stage .g4{--px:var(--dx)}
+.stage .g2,.stage .g5{--px:0px}
+.stage .g0,.stage .g1,.stage .g2{--py:calc(-1 * var(--dy))}
+.stage .g3,.stage .g4,.stage .g5{--py:var(--dy)}
+.stage.in0 .g0,.stage.in1 .g1,.stage.in2 .g2,
+.stage.in3 .g3,.stage.in4 .g4,.stage.in5 .g5{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.stage.park0 .g0,.stage.park1 .g1,.stage.park2 .g2,
+.stage.park3 .g3,.stage.park4 .g4,.stage.park5 .g5{
+  opacity:.74;transform:translate(calc(-50% + var(--px)),calc(-50% + var(--py))) scale(var(--park));
+}
+/* While the tour is running a group has to step well aside, because the middle of the
+   screen is where the next one lands. Once the last has arrived nothing is coming, so
+   the six open out and come up to the size the tiles are taught at. */
+/* The suits and the honours are two separate things to look at, so the two rows are
+   given real air between them. While the tour runs the groups sit low to leave the line
+   its room at the top; once it is over there is no line, so they take the whole stage
+   and centre in it -- which is where the room for the gap comes from. */
+.stage.settled{--dx:33cqw;--dy:clamp(74px,17vh,150px);--park:.95}
+.stage.settled .stage-group{opacity:1;top:50%}
+/* The whole set is on the screen and nothing more is coming, so the middle -- which was
+   kept clear all through the tour because it is where each kind landed -- now carries
+   the one thing left to do. */
+.stage-go{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;
+  /* The same type as the line that opened the tour: it takes that line's place in the
+     middle of the screen once the six are out, and is the next thing read there. */
+  font:clamp(23px,min(4.2vw,4.6vh),42px)/1.1 var(--display-font);letter-spacing:-.03em;
+  color:#ffd9c9;white-space:nowrap;opacity:0;transition:opacity .7s ease;
+}
+.stage.settled .stage-go{opacity:1}
+/* Settling only opens the same six places wider, so every kind moves straight out from
+   the middle and none of them crosses another. A phone has to take them smaller: three
+   groups of four tiles will not stand side by side in 288 pixels at any larger size. */
+@media(max-width:620px){.stage.settled{--dx:32cqw;--park:.56}}
+.learn-staging{cursor:pointer}
+
+@media(max-width:1000px){
+  .learn-inner{padding-top:calc(max(2.5vw, env(safe-area-inset-top,0px)) + 30px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .learn-inner>*,.learn-tiles img,.learn-play.fresh .learn-tile,.learn-bin-tiles img,.learn-note{animation:none}
+  .stage-line,.stage-group,.stage-go{transition:none}
+}
+
+/* ---- washing the tiles between hands -----------------------------------------------
+   The hand just played is copied into a layer over the board, turned face down and
+   pushed around the felt. The board underneath is hidden while that happens, so these
+   read as the same tiles being mixed rather than a second set on top of them. */
+/* everything on the felt goes, not just the seats: a tile left showing through would
+   read as one that had not been picked up */
+.practice-board.washing img:not(.wash-tile){visibility:hidden}
+.wash{position:absolute;inset:0;z-index:7;pointer-events:none}
+.wash-tile{
+  position:absolute;left:0;top:0;border-radius:11.5% / 8.8%;
+  filter:drop-shadow(0 2px 3px #06170ca8);will-change:transform;
+  transition:transform .62s cubic-bezier(.36,.08,.36,1);
+}
+@media(prefers-reduced-motion:reduce){.wash-tile{transition:none}}
+
+/* ---- the end of a hand, on the table ---------------------------------------------
+   The real tiles are measured and copied into a layer over the board, then hidden, so
+   the copies can turn over and travel without fighting the layout that placed them. */
+.practice-board.curtained .practice-seat img,
+.practice-board.curtained .practice-river img{visibility:hidden}
+.curtain{position:absolute;inset:0;z-index:6;pointer-events:none}
+.curtain-tile{
+  position:absolute;transform-origin:50% 50%;will-change:transform;
+  border-radius:11.5% / 8.8%;filter:drop-shadow(0 2px 3px #06170ca0);
+}
+/* The table and everything face down on it, put in shadow: the dim sits ABOVE the
+   settled tiles and below a lifted hand, so the hand being read is the one thing lit. */
+.curtain-dim{
+  position:absolute;inset:0;z-index:3;border-radius:inherit;
+  background:radial-gradient(130% 100% at 50% 44%,#00120bc4 0%,#000f08e6 62%,#000a06f7 100%);
+  opacity:0;transition:opacity .9s ease;
+}
+.curtain-dim.in{opacity:1}
+/* The call, over the darkened table, before any hand is lifted. One word in the face
+   the rest of the site says things in, at the size of a heading rather than a title,
+   and it simply arrives: no gold, no shadow under it, nothing swelling into place. */
+.curtain-call{
+  position:absolute;left:0;right:0;top:50%;z-index:6;text-align:center;pointer-events:none;
+  transform:translateY(-50%);opacity:0;transition:opacity .45s ease;
+}
+.curtain-call.in{opacity:1}
+.curtain-call b{
+  display:block;font:400 max(7.4cqw,38px)/1 var(--display-font);
+  color:#f9d782;letter-spacing:-.025em;
+}
+
+/* a hand lifted off the table, and the tiles that earned a faan lit while it is said */
+.curtain-tile.up{z-index:4;filter:drop-shadow(0 max(1.4cqw,9px) max(1.8cqw,12px) #02100926) drop-shadow(0 max(.4cqw,3px) max(.5cqw,4px) #0210094d)}
+/* one ring around the span of tiles a faan is counted on */
+.curtain-ring{
+  position:absolute;z-index:5;pointer-events:none;
+  border:max(.3cqw,2px) solid #f9d782;
+  box-shadow:0 0 max(1.7cqw,11px) #f9d78240,inset 0 0 max(1.7cqw,11px) #f9d78226;
+  opacity:0;
+  transition:opacity .22s ease,left .3s ease,top .3s ease,width .3s ease,height .3s ease;
+}
+.curtain-ring.in{opacity:1}
+.curtain-say{
+  position:absolute;left:6%;right:6%;bottom:58%;z-index:5;text-align:center;color:#f3e4cd;
+  opacity:0;transform:translateY(7px);
+  transition:opacity .34s ease,transform .34s cubic-bezier(.2,.7,.2,1);
+}
+.curtain-say.in{opacity:1;transform:none}
+.curtain-say b{display:block;font:max(3cqw,17px)/1.1 var(--display-font);font-weight:400;color:#f9d782}
+.curtain-say em{
+  display:block;margin-top:.35em;min-height:1.2em;font-style:normal;
+  font:max(1.9cqw,12px)/1.3 var(--display-font);color:#e8dac2;
+}
+.curtain-tap{
+  position:absolute;left:6%;right:6%;z-index:5;text-align:center;
+  font:max(1.35cqw,9.5px)/1.3 var(--mono-font);letter-spacing:.16em;
+  text-transform:uppercase;color:#f3e4cd8c;
+  opacity:0;transition:opacity .34s ease;
+}
+.curtain-tap.in{opacity:1}
+@media(prefers-reduced-motion:reduce){
+  .curtain-tile{transition:none!important}
+  .curtain-say,.curtain-tap{transition:none}
+}
+
+/* A short screen has width to spare, so a lesson with something to read is laid across
+   rather than down: what it says on the left, what it asks on the right, each half
+   centred in itself. Nothing here scrolls, and three of the later lessons do not fit any
+   other way. A lesson with no prose has nothing to put on the left, so it stays in the
+   middle where everything else lives. */
+@media(max-height:580px) and (min-width:680px){
+  /* 12px, not 4: when the prompt hides to make room the tiles come up level with the
+     title, and a tapped tile wears a ring 5px clear of itself. */
+  .learn-inner:has(.learn-say){display:grid;grid-template-columns:1fr 1fr;gap:12px 22px;align-items:start}
+  .learn-body h2{grid-column:1/-1;margin-bottom:.15em}
+  .learn-say{grid-column:1;grid-row:2/span 2;margin:0;align-self:start;max-width:none}
+  .learn-ask,.learn-play{grid-column:2}
+  /* Except where the task is a hand of thirteen: half a screen is not enough for
+     thirteen tiles on one line, and these lessons say little enough to stack. */
+  .learn-inner:has(.learn-row.hand){display:block}
+  .learn-tray{min-height:clamp(40px,12vh,70px)}
+  .stage{grid-column:1/-1;height:min(74vh,300px)}
+}
+@media(max-height:460px){
+  .learn-say{font-size:clamp(11px,2.9vh,14px);line-height:1.42}
+  .learn-tiles img{width:clamp(17px,4.4vh,26px)}
+  /* Set the size itself, not the tray's copy of it: a tile in a box reads --tile too,
+     and overriding only the tray made a tile shrink the moment it was dropped. */
+  .learn-inner{--tile:clamp(26px,9vh,40px)}
+  .learn-note{padding:6px 10px;font-size:clamp(11px,2.9vh,13px)}
+  .learn-choice{padding:7px 12px}
+}
+/* Once a lesson has been answered its explanation has to go somewhere, and on a short
+   screen there is nowhere left. The lesson's own words step back to make the room: they
+   have been read by then, and the explanation is the part that matters next. */
+@media(max-height:580px){
+  .learn-inner:has(.learn-note) .learn-say{font-size:clamp(10px,2.5vh,13px);line-height:1.34}
+  .learn-inner:has(.learn-note) .learn-tiles img{width:clamp(15px,3.6vh,22px)}
+  .learn-inner:has(.learn-note) .learn-tray{min-height:0}
+}
+@media(max-height:430px){
+  .learn-bins{gap:6px}
+  .learn-row,.learn-tray{gap:6px;margin-bottom:.6em}
+  .learn-ask{margin-bottom:max(12px,.5em)}
+}
+@media(max-height:430px){
+  .learn-note{padding:5px 9px}
+  .learn-choices{gap:5px;margin-bottom:.6em}
+  .learn-say{margin-bottom:.6em}
+}
+/* The narrowest phones and the shortest landscapes: the tiles in the prose come down a
+   size, and once a question has been answered its prompt steps aside for the answer. */
+@media(max-width:420px){
+  .learn-say{font-size:13px;line-height:1.44}
+  .learn-tiles{margin:3px 5px 3px 0;padding:3px 4px}
+  .learn-tiles img{width:18px}
+}
+@media(max-height:430px){
+  .learn-inner:has(.learn-note) .learn-ask{display:none}
+}
+@media(max-width:420px){
+  .learn-inner:has(.learn-note) .learn-say{font-size:11.5px;line-height:1.36}
+  .learn-inner:has(.learn-note) .learn-tiles{margin:2px 4px 2px 0;padding:2px 3px}
+  .learn-inner:has(.learn-note) .learn-tiles img{width:15px}
+}
+@media(max-width:420px){.learn-inner:has(.learn-note) .learn-ask{display:none}}
+/* A tile lifted by the pointer: a copy that follows the hand, with the one it came from
+   left faint underneath so you can see where it will go back to. */
+.learn-tile.grab{cursor:grab;touch-action:none}
+.learn-tile.grab:active{cursor:grabbing}
+.learn-tile.lifting{opacity:.28}
+.learn-ghost{
+  position:fixed;left:0;top:0;z-index:60;pointer-events:none;height:auto;
+  transform-origin:top left;border-radius:11.5% / 8.8%;
+  filter:drop-shadow(0 10px 16px #1d0201b0);
+}

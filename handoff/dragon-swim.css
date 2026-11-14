@@ -1,0 +1,18 @@
+/* Apply to the existing hero if it does not already establish a containing block. */
+.mahjong-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.dragon-swim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dragon-swim { display: none; }
+}

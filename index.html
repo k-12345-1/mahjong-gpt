@@ -1,0 +1,2224 @@
+<link rel="icon" id="tileIcon" href="icon.png" type="image/png">
+<!-- This page is published as a fragment: the host supplies the document, so a link
+     written here lands in the body, where a browser is not obliged to read it. Put it
+     where it counts, and take out any icon the host had already set. -->
+<script>(function(){var l=document.getElementById("tileIcon");if(!l||!document.head)return;
+document.head.querySelectorAll('link[rel~="icon"]').forEach(function(o){if(o!==l)o.remove();});
+document.head.appendChild(l);
+var a=document.createElement("link");a.rel="apple-touch-icon";a.href=l.href;document.head.appendChild(a);})();</script>
+<title>MahjongGPT</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a lacquer table. Giant Didone sets the name, mono carries every label and
+   number, and the hand you are playing sits on it as pale paper objects. */
+:root{
+  /* The ground, read off the dragon photograph: a deep lacquer that falls away to
+     near-black at the edges, rather than the brighter vermilion it was. */
+  --lacquer:#9c0400; --lacquer-deep:#6e0200;
+  /* The ground is a slow gradient over a narrow range of red -- about forty levels
+     across a whole screen -- so eight-bit colour lays it down in visible bands. A
+     faint grain over the top dithers them away; it is too fine to read as texture. */
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23g)' opacity='.055'/></svg>");
+  --ground:var(--grain) repeat,radial-gradient(118% 92% at 50% 44%,var(--lacquer) 0%,var(--lacquer) 34%,var(--lacquer-deep) 100%);
+  --chalk:#e9e6e6; --chalk-2:#d7d4d4; --chalk-3:#c9c5c5;
+  --paper:#f4f1ec; --ink:#202020; --ink-soft:#6b6460;
+  --rule:rgba(233,230,230,.26); --rule-ink:rgba(32,32,32,.14);
+  --tile:#fcfbf8; --tile-line:#24211e; --tile-shade:#cfc9bf;
+  --green:#0f6b3f; --gold:#a97a26;
+  --display:'Instrument Serif','Didot','Bodoni MT',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cjk:'Songti TC','Noto Serif CJK TC','PingFang TC','Hiragino Sans GB','Microsoft JhengHei',serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+/* white scrollbar on the lacquer; ink inside the paper panels so it stays visible */
+html{scrollbar-color:#fff rgba(0,0,0,.28);scrollbar-width:thin}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,.28)}
+::-webkit-scrollbar-thumb{background:#fff;border-radius:999px;border:2px solid rgba(0,0,0,.28);
+  background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:#fff;background-clip:padding-box}
+::-webkit-scrollbar-corner{background:rgba(0,0,0,.28)}
+.panel{scrollbar-color:var(--ink) rgba(32,32,32,.12)}
+.panel ::-webkit-scrollbar-track,.panel::-webkit-scrollbar-track{background:rgba(32,32,32,.12)}
+.panel ::-webkit-scrollbar-thumb,.panel::-webkit-scrollbar-thumb{background:var(--ink);
+  border-color:rgba(32,32,32,.12)}
+html,body{background:var(--lacquer)}
+body{color:var(--chalk);font-family:var(--mono);font-size:13.5px;line-height:1.6;
+  -webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1020px;margin-inline:auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:.94;letter-spacing:-.01em;text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:2px solid var(--chalk);outline-offset:3px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--chalk-3)}
+.cjk{font-family:var(--cjk)}
+
+/* ---- hero: the name, nothing else ---- */
+.hero{position:relative;width:100%;height:100vh;height:100dvh;min-height:320px;overflow:hidden;
+  isolation:isolate;
+  background:var(--ground);user-select:none;-webkit-user-select:none}
+.hero-centre{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center}
+/* Two dragon layers. The still one sits behind the type and is what you get with reduced
+   motion, or before the canvas has its image; the canvas overlay replaces it once it is
+   actually drawing, and passes IN FRONT of the title. Menu and Play outrank both. */
+/* The dragon is off the hero for now: its markup is commented out in the header below
+   and nothing mounts the canvas, so these rules are dormant until it goes back. */
+.dragon-static{--bleed:13vw;position:absolute;z-index:1;left:calc(var(--bleed)*-1);bottom:-7vh;
+  height:128vh;width:max-content;pointer-events:none}
+.dragon{display:block;height:100%;width:auto;opacity:.66;-webkit-user-drag:none}
+@keyframes settleIn{from{opacity:0}}
+/* The dragon waits for the T to land -- it is the last letter, so that is also when the
+   wordmark is done. --after-title is set in JS from the same constants that stagger the
+   letters, so it cannot drift if the wordmark changes. `backwards` holds it at zero
+   through the wait; under reduced motion the title does not rise, so neither does it. */
+@media (prefers-reduced-motion:no-preference){
+  .dragon,.dragon-swim,.dragon-stage{
+    animation:settleIn .8s ease-out var(--after-title,1.455s) backwards}
+}
+.hero.swimming .dragon-static{display:none}
+.dragon-swim{position:absolute;inset:0;width:100%;height:100%;display:block;
+  pointer-events:none;z-index:3;opacity:.95;
+  filter:drop-shadow(0 16px 20px rgba(32,2,0,.5)) drop-shadow(0 3px 5px rgba(32,2,0,.4))}
+@media (prefers-reduced-motion:reduce){.dragon-swim{display:none}}
+/* The 3D dragon's own layer. It sits in front of the wordmark, the way the supplied
+   landing page has it; the menu button stays above both. */
+.dragon-swim-layer{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.dragon-swim-layer[hidden]{display:none}
+/* The dragon as supplied: a page of its own, running its own scene, carried on the hero
+   in a frame of its own. ?embed drops its chrome and its backdrop, so what is left is the
+   creature on this page's red. It is in front of the wordmark, as the one before it was.
+   It takes no input at all: this is a creature swimming past, not a toy to be handled, and
+   a frame that answered the pointer would swallow a drag across the hero -- which on a
+   touch screen is the page being scrolled. */
+.dragon-stage{position:absolute;inset:0;width:100%;height:100%;z-index:3;border:0;
+  background:transparent;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.dragon-stage{display:none}}
+.hero-stage{position:relative;font-family:var(--display);font-weight:400;color:#fff;
+  text-transform:uppercase;line-height:.98;letter-spacing:-.045em;
+  --dfs:min(24.25vw,43vh);font-size:var(--dfs)}
+.hero-line{display:block;position:relative;white-space:nowrap}
+.hero-row-b{position:relative;text-align:center}
+.hero-line.b{position:relative;display:inline-block}
+/* each letter rises out of a clipped word box, 45ms apart */
+/* The clip is what hides the letters until they rise into the line. Its bottom used
+   to sit exactly on the box, which cut the word's own shadow off in a straight line
+   across the red -- the shadow falls 10px with a 26px blur, so it needs the room. */
+.word{display:block;clip-path:inset(-50% -.5em -48px);margin-bottom:-.08em;padding-bottom:.08em;padding-right:.08em;
+  text-shadow:0 10px 26px rgba(32,2,0,.42),0 2px 4px rgba(32,2,0,.3)}
+.word i{display:inline-block;font-style:normal}
+@media (prefers-reduced-motion:no-preference){
+  /* No will-change here. It gave every letter a layer of its own, and the word's soft
+     shadow was then cut off square at each letter's layer edge -- which drew a row of
+     rectangles on the ground behind the type. The browser promotes a running transform
+     animation anyway, so the hint bought nothing and the layers were never given back. */
+  .word i{transform:translateY(110%);opacity:0;animation:rise .9s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes rise{to{transform:none;opacity:1}}
+}
+.ui-chip{position:absolute;z-index:30;display:inline-flex;align-items:center;
+  font-family:var(--mono);font-weight:500;text-transform:uppercase;white-space:nowrap;border:0;border-radius:max(6px,.5vw);height:max(40px,3.6vw);padding:0 max(16px,1.6vw);
+  font-size:max(.7rem,.85vw);letter-spacing:.08em;background:rgba(0,0,0,.3);color:#fff;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  transition:background .15s ease,transform .1s ease}
+button.ui-chip{cursor:pointer}
+button.ui-chip:hover{background:rgba(0,0,0,.45)}
+button.ui-chip:active{transform:scale(.97)}
+.ui-tr{right:max(2.5vw,env(safe-area-inset-right,0px));top:max(2.5vw,env(safe-area-inset-top,0px))}
+/* ---- menu button and the full-screen menu it opens ---- */
+.menu-btn{position:fixed;z-index:40;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:max(8px,.75vw);width:max(44px,4vw);height:max(44px,4vw);
+  background:#fff;color:#202020;border:0;cursor:pointer;transition:background .15s ease,transform .1s ease}
+.menu-btn:hover{background:#e9e6e6}
+.menu-btn:active{transform:scale(.95)}
+.menu-btn svg{width:42%;height:42%}
+.menu{position:fixed;inset:0;z-index:35;display:flex;align-items:center;
+  background:var(--ground)}
+.menu-body{width:100%;max-width:none;padding:0 6vw 0 11vw}
+.menu ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1.2vw}
+.menu a{display:inline-block;font-family:var(--display);font-weight:400;color:#fff;
+  font-size:min(9vw,14vh);line-height:1;letter-spacing:0;text-transform:uppercase;
+  text-decoration:none;transition:transform .15s ease,opacity .15s ease}
+.menu a:hover{transform:translateX(.05em);opacity:.8}
+@media (prefers-reduced-motion:no-preference){
+  .menu li{opacity:0;animation:menuIn .45s ease-out forwards}
+  @keyframes menuIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+}
+/* Everything but Home goes to a blank red page. It covers the hero but stays under the menu
+   button and the menu itself, so the only thing on it is the hamburger, and the menu is the
+   way off. */
+.blank-page{position:fixed;inset:0;z-index:32;background:var(--ground)}
+.ui-bl{left:max(2.5vw,env(safe-area-inset-left,0px));bottom:calc(3.5vh + env(safe-area-inset-bottom,0px))}
+.ui-br{right:max(2.5vw,env(safe-area-inset-right,0px));bottom:calc(3.5vh + env(safe-area-inset-bottom,0px))}
+@media (max-width:640px){
+  .dragon-static{--bleed:22vw;height:71vh;bottom:0}
+  .dragon{opacity:.54}.dragon-swim{opacity:.92}
+  .menu-body{max-width:100vw;padding:0 max(16px,env(safe-area-inset-left,0px))}
+  .menu ul{gap:2.2vh}
+  .menu a{font-size:clamp(2rem,12vw,9vh)}
+  .hero-stage{--dfs:23.3vw}
+  .ui-tr{top:max(16px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px))}
+  .ui-bl{left:max(16px,env(safe-area-inset-left,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+  .ui-br{right:max(16px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-height:480px){.hero-stage{--dfs:min(24.25vw,36vh)}}
+</style>
+<style>
+/* ---- tiles: white face, thin dark edge, a little depth ---- */
+.tile{position:relative;flex:0 0 auto;width:40px;height:54px;border-radius:5px;background:var(--tile);
+  border:1px solid var(--tile-line);border-bottom:3px solid var(--tile-shade);color:#1d1a17;
+  padding:0;display:grid;place-items:center;font-family:var(--cjk);line-height:1;overflow:hidden;
+  box-shadow:0 2px 3px rgba(0,0,0,.28)}
+button.tile{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+button.tile:hover{transform:translateY(-5px);box-shadow:0 9px 14px rgba(0,0,0,.42)}
+button.tile[disabled]{cursor:default;transform:none}
+.tile svg{width:100%;height:100%;display:block}
+.tile .glyph{font-size:27px;font-weight:500}
+.tile .wan{display:grid;line-height:.9;text-align:center;gap:1px}
+.tile .wan i{font-style:normal;font-size:.85em}
+.tile .wan em{font-style:normal;font-size:.68em;color:#bf2318;font-weight:600}
+.tile.sm{width:32px;height:43px}.tile.sm .glyph{font-size:21px}
+.tile.xs{width:25px;height:34px}.tile.xs .glyph{font-size:17px}
+.tile.back{background:linear-gradient(165deg,#2f8f5f,#135c3c);border-color:#0d4630;border-bottom-color:#0a3524}
+.tile.back::after{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.22);border-radius:3px}
+.tile.drawn{box-shadow:0 0 0 2px var(--gold),0 2px 3px rgba(0,0,0,.28)}
+.tile.live{box-shadow:0 0 0 2px #fff,0 2px 3px rgba(0,0,0,.28)}
+@media (max-width:640px){
+  .tile{width:31px;height:43px}.tile .glyph{font-size:21px}
+  .tile.sm{width:25px;height:34px}.tile.sm .glyph{font-size:17px}
+  .tile.xs{width:21px;height:28px}.tile.xs .glyph{font-size:14px}
+}
+
+/* ---- the table ---- */
+.play .wrap{padding-block:clamp(26px,4.4vw,46px) clamp(30px,5vw,56px)}
+.play-head{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:flex-end;justify-content:space-between;
+  margin-bottom:20px}
+.play-head h2{font-size:clamp(26px,4.4vw,42px);color:var(--chalk)}
+.play-meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.felt{border:1px solid var(--rule);border-radius:10px;background:rgba(0,0,0,.28);padding:4px;
+  display:flex;flex-direction:column}
+.seat{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:8px 14px;align-items:center;
+  padding:10px;border-radius:7px;border-left:2px solid transparent;min-width:0}
+.seat+.seat{box-shadow:inset 0 1px 0 var(--rule)}
+/* whose turn it is has to read at a glance, so it gets an edge, not just a wash */
+.seat.turn{background:rgba(255,255,255,.07);border-left-color:var(--gold)}
+.seat-id{display:flex;flex-direction:column;gap:3px;min-width:0}
+.seat-id .w{font-family:var(--cjk);font-size:21px;line-height:1;color:var(--chalk)}
+.seat-id .n{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--chalk-3);
+  min-height:11px}
+.seat-hand{display:flex;flex-wrap:wrap;gap:4px 9px;align-items:center;min-width:0}
+.set{display:flex;gap:2px}
+/* a hand you cannot see is still a hand: backs overlap the way a held hand does */
+.backs{display:flex}
+.backs .tile{margin-left:-9px}
+.backs .tile:first-child{margin-left:0}
+/* the pond is a place on the table, so it gets a sunk surface and keeps its own shape */
+.seat-pond{display:flex;flex-wrap:wrap;align-content:flex-start;gap:3px;width:165px;
+  padding:6px;border-radius:6px;background:rgba(0,0,0,.32);min-height:40px}
+.seat-pond .tile{opacity:.76}
+.seat-pond .tile:last-child{opacity:1;box-shadow:0 0 0 1.5px var(--chalk-3),0 2px 3px rgba(0,0,0,.28)}
+.my-rack{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px;min-width:0;margin-top:4px;
+  padding-top:10px;border-top:1px solid var(--rule)}
+@media (max-width:640px){
+  .seat{grid-template-columns:38px minmax(0,1fr);gap:6px 10px;padding:9px 8px}
+  .seat-pond{grid-column:1/-1;width:auto}
+}
+.my-rack .tile{animation:deal .16s ease-out}
+@keyframes deal{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+.gap{width:10px}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;min-height:38px}
+.btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--chalk);color:var(--lacquer-deep);border:1px solid var(--chalk);border-radius:6px;
+  padding:9px 15px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#fff}
+.btn.ghost{background:none;color:var(--chalk-2);border-color:var(--rule)}
+.btn.ghost:hover{background:rgba(0,0,0,.2);color:var(--chalk)}
+.btn.go{background:var(--gold);border-color:var(--gold);color:#1d1408}
+.btn .cjk{font-size:14px;letter-spacing:0;margin-right:.3em}
+.hint{font-size:11.5px;color:var(--chalk-3)}
+
+/* ---- the coach's live reading ---- */
+.readout{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:18px}
+.panel{background:var(--paper);color:var(--ink);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font-family:var(--display);font-size:22px;color:var(--ink);margin-bottom:2px}
+.panel .eyebrow{color:var(--ink-soft);display:block;margin-bottom:10px}
+.panel p{font-size:12px;color:var(--ink-soft);margin-top:10px}
+.panel p b{color:var(--ink);font-weight:600}
+.big{font-family:var(--display);font-size:clamp(30px,5vw,44px);line-height:.9;color:var(--lacquer);
+  font-variant-numeric:tabular-nums}
+.big small{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--ink-soft);display:block;margin-top:8px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-weight:600;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-soft);padding:0 12px 7px 0;border-bottom:1px solid var(--ink);white-space:nowrap}
+td{padding:7px 12px 7px 0;border-bottom:1px solid var(--rule-ink);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+th:last-child,td:last-child{padding-right:0}
+.num{text-align:right;white-space:nowrap}
+.cjk-cell{font-family:var(--cjk);font-size:13px}
+.faan-n{font-weight:600;color:var(--gold)}
+.risk{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  padding:3px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+.r-safe{color:var(--green);border-color:var(--green)}
+.r-fair{color:var(--ink-soft);border-color:var(--rule-ink)}
+.r-live{color:var(--gold);border-color:var(--gold)}
+.r-hot{color:var(--lacquer);border-color:var(--lacquer);background:rgba(156,4,0,.08)}
+.threat{margin-top:10px;font-size:11.5px;color:var(--ink-soft);border-left:2px solid var(--lacquer);
+  padding-left:10px}
+.threat b{color:var(--ink);font-weight:600}
+.best td{background:rgba(15,107,63,.08)}
+.tilerow{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.total{display:flex;justify-content:space-between;gap:14px;align-items:baseline;margin-top:12px;
+  padding-top:11px;border-top:2px solid var(--ink);font-family:var(--display);font-size:21px}
+.total .n{color:var(--lacquer);font-variant-numeric:tabular-nums}
+.payout{margin-top:11px;font-size:11.5px;color:var(--ink-soft);border-left:2px solid var(--gold);padding-left:11px}
+.payout b{color:var(--ink);font-weight:600}
+.log{margin-top:16px;font-size:11.5px;color:var(--chalk-3);display:flex;flex-direction:column;gap:3px;
+  max-height:110px;overflow-y:auto}
+.log b{color:var(--chalk);font-weight:500}
+
+/* ---- coach ---- */
+.coach .wrap{padding-block:0 clamp(32px,5vw,60px)}
+.coach-head{margin-bottom:16px}
+.coach-head h2{font-size:clamp(26px,4.4vw,42px);color:var(--chalk);margin-bottom:7px}
+.coach-head p{font-size:12.5px;color:var(--chalk-2);max-width:62ch}
+/* the reading goes on paper, like the counting panels; lacquer stays the table and its controls */
+.thread{display:flex;flex-direction:column;gap:16px;max-height:min(58vh,440px);overflow-y:auto;
+  padding:16px 18px}
+.thread:empty{display:none}
+.msg{max-width:min(94%,62ch);font-size:12.5px;line-height:1.6}
+.msg.you{align-self:flex-end;background:var(--lacquer);color:#fff;border-radius:10px 10px 2px 10px;
+  padding:9px 13px}
+.msg.coach{align-self:flex-start;border-left:2px solid var(--lacquer);padding-left:14px;color:var(--ink-soft)}
+.msg.coach .who{font-size:10px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--ink-soft);margin-bottom:6px}
+.msg.coach p{margin-bottom:9px}
+.msg.coach p:last-child{margin-bottom:0}
+.msg.coach ul{margin:0 0 9px;padding-left:18px}
+.msg.coach b{color:var(--ink);font-weight:600}
+.prompts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+/* the menu button is fixed top-right, and a section head lands right under it when you
+   jump there from the menu, so the heads keep that corner clear on a narrow screen */
+@media (max-width:640px){
+  .coach-head p,.play-head{padding-right:48px}
+}
+.prompts button{font-family:var(--mono);font-size:11.5px;text-align:left;background:none;color:var(--chalk-2);
+  border:1px solid var(--rule);border-radius:999px;padding:7px 14px;cursor:pointer}
+.prompts button:hover{border-color:var(--chalk);color:var(--chalk)}
+.ask{display:flex;gap:8px;margin-top:14px}
+.ask input{flex:1 1 auto;min-width:0;font-family:var(--mono);font-size:13px;background:rgba(0,0,0,.24);
+  color:var(--chalk);border:1px solid var(--rule);border-radius:7px;padding:10px 13px}
+.ask input::placeholder{color:var(--chalk-3);opacity:.7}
+.offline{margin-top:14px;font-size:11.5px;color:var(--chalk-3);border-left:2px solid var(--rule);padding-left:12px}
+.dots::after{content:"";animation:dots 1.2s steps(4,end) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+footer{background:#fff;color:var(--ink)}
+footer .bar{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;
+  justify-content:space-between;padding-block:18px}
+.bar-name{font-family:var(--display);font-size:19px;line-height:1;color:var(--ink)}
+.bar-links{display:flex;flex-wrap:wrap;gap:8px 20px}
+.bar-links a,.bar-links span{font-family:var(--mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);text-decoration:none;
+  white-space:nowrap}
+.bar-links a:hover{color:var(--lacquer)}
+</style>
+<style>
+.faan-ref{columns:3 190px;column-gap:26px;margin-top:4px}
+.faan-ref .row{break-inside:avoid;display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+  padding:5px 0;border-bottom:1px solid var(--rule-ink)}
+.faan-ref .nm{font-family:var(--cjk);font-size:13px;color:var(--ink)}
+.faan-ref .nm span{font-family:var(--mono);font-size:10px;color:var(--ink-soft);margin-left:6px}
+.faan-ref .v{font-weight:600;color:var(--gold);white-space:nowrap;font-size:11px}
+</style>
+
+
+
+
+<button class="menu-btn ui-tr" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+    aria-hidden="true"><path id="menuIcon" d="M3 6h18M3 12h18M3 18h18"/></svg>
+</button>
+<nav class="menu" id="menu" hidden aria-label="Sections">
+  <div class="menu-body">
+    <ul>
+      <li style="animation-delay:.08s"><a href="#home">Home</a></li>
+      <li style="animation-delay:.14s"><a href="#play">Play</a></li>
+      <li style="animation-delay:.20s"><a href="#instructions">Learn to play</a></li>
+      <li style="animation-delay:.26s"><a href="#gpt">Ask Mahjong GPT</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="blank-page" id="blankPage" hidden></div>
+
+<header class="hero" id="home">
+  <!-- The dragon is off the hero for now. Its markup is the four lines below, its
+       styles are in the stylesheet above, and its swim is mountDragonSwim; putting it
+       back is uncommenting this and the call near the foot of the page.
+  <div class="dragon-static" aria-hidden="true">
+    <img class="dragon" src="dragon.webp" alt="" width="1024" height="1536"
+      decoding="async" fetchpriority="high">
+  </div>
+  -->
+  <iframe class="dragon-stage" src="dragon.html?embed" title="Imperial dragon"
+    aria-hidden="true" tabindex="-1" scrolling="no"></iframe>
+  <div class="hero-centre">
+    <div class="hero-stage">
+      <span class="hero-line a"><span class="word" id="wordA">MAHJONG</span></span>
+      <div class="hero-row-b">
+        <span class="hero-line b"><span class="word" id="wordB">GPT</span></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+
+
+<script>
+/* ===== engine: source of truth is engine.js, checked by test.js ===== */
+/* Hong Kong Mahjong engine: hand parsing, shanten, ukeire, faan scoring.
+   Tile index 0-33: 0-8 筒1-9, 9-17 索1-9, 18-26 萬1-9, 27-30 東南西北, 31-33 中發白 */
+(function (root) {
+'use strict';
+
+var SUIT_CH = ['筒', '索', '萬'];
+var HONOR_CH = ['東', '南', '西', '北', '中', '發', '白'];
+var WINDS = [27, 28, 29, 30];
+var DRAGONS = [31, 32, 33];
+var ORPHANS = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33];
+
+function isHonor(i) { return i >= 27; }
+function suitOf(i) { return i < 27 ? Math.floor(i / 9) : 3; }
+function rankOf(i) { return i < 27 ? (i % 9) + 1 : i - 26; }
+function isTerminal(i) { return !isHonor(i) && (rankOf(i) === 1 || rankOf(i) === 9); }
+function isEdge(i) { return isHonor(i) || isTerminal(i); }
+
+function tileName(i) {
+  return isHonor(i) ? HONOR_CH[i - 27] : rankOf(i) + SUIT_CH[suitOf(i)];
+}
+
+/* Shorthand: "123p 456s 99m 東東中中" or "123筒 456索". Letters p/s/m or 筒/索/萬. */
+var LETTER = { p: 0, d: 0, s: 1, b: 1, m: 2, c: 2, '筒': 0, '索': 1, '萬': 2 };
+function parseHand(text) {
+  var counts = new Array(34).fill(0), pending = [], bad = [], i, ch, s, n;
+  for (i = 0; i < text.length; i++) {
+    ch = text[i];
+    if (ch >= '0' && ch <= '9') { pending.push(+ch); continue; }
+    s = LETTER[ch.toLowerCase()] !== undefined ? LETTER[ch.toLowerCase()] : LETTER[ch];
+    if (s !== undefined && pending.length) {
+      while (pending.length) { n = pending.shift(); if (n >= 1 && n <= 9) counts[s * 9 + n - 1]++; else bad.push(n + ch); }
+      continue;
+    }
+    n = HONOR_CH.indexOf(ch);
+    if (n >= 0) { counts[27 + n]++; continue; }
+    if (/\s|,/.test(ch)) { pending = []; continue; }
+    if (ch !== 'z' && ch !== 'w') bad.push(ch);
+  }
+  return { counts: counts, unparsed: bad };
+}
+
+var KONG_RE = /(暗|明)\s*槓\s*([1-9]\s*[psmdbcPSMDBC筒索萬]|[東南西北中發白])/g;
+/* "暗槓中 明槓3筒 123456789筒 東東" -> rack counts plus the declared kongs */
+function parseFull(text) {
+  var kongs = [];
+  var rest = String(text).replace(KONG_RE, function (_, kind, tile) {
+    var c = parseHand(tile).counts, idx = c.indexOf(1);
+    if (idx >= 0) kongs.push({ tile: idx, concealed: kind === '暗' });
+    return ' ';
+  });
+  var r = parseHand(rest);
+  return { counts: r.counts, kongs: kongs, unparsed: r.unparsed };
+}
+
+function formatHand(counts, kongs) {
+  var out = [], s, r, k, parts;
+  (kongs || []).forEach(function (kk) {
+    out.push((kk.concealed ? '暗槓' : '明槓') + tileName(kk.tile));
+  });
+  for (s = 0; s < 3; s++) {
+    parts = '';
+    for (r = 1; r <= 9; r++) for (k = 0; k < counts[s * 9 + r - 1]; k++) parts += r;
+    if (parts) out.push(parts + SUIT_CH[s]);
+  }
+  var hon = '';
+  for (var i = 27; i < 34; i++) for (var j = 0; j < counts[i]; j++) hon += HONOR_CH[i - 27];
+  if (hon) out.push(hon);
+  return out.join(' ');
+}
+
+function countsToTiles(counts) {
+  var t = [], i, k;
+  for (i = 0; i < 34; i++) for (k = 0; k < counts[i]; k++) t.push(i);
+  return t;
+}
+function total(counts) { return counts.reduce(function (a, b) { return a + b; }, 0); }
+
+/* ---------- shanten ---------- */
+/* -1 = complete hand, 0 = tenpai (one tile away), n = n tiles from tenpai. */
+function standardShanten(c, declared) {
+  var cnt = c.slice(), best = 8;
+  declared = declared || 0;
+  function walk(i, melds, parts, pair) {
+    if (melds + parts > 5) return;
+    if (i >= 34) {
+      var p = parts, sh;
+      if (melds + p > 5) p = 5 - melds;
+      sh = 8 - 2 * melds - p;
+      if (melds + p === 5 && !pair) sh += 1;
+      if (sh < best) best = sh;
+      return;
+    }
+    if (cnt[i] === 0) { walk(i + 1, melds, parts, pair); return; }
+    if (cnt[i] >= 3) { cnt[i] -= 3; walk(i, melds + 1, parts, pair); cnt[i] += 3; }
+    if (!isHonor(i) && rankOf(i) <= 7 && cnt[i + 1] && cnt[i + 2]) {
+      cnt[i]--; cnt[i + 1]--; cnt[i + 2]--; walk(i, melds + 1, parts, pair);
+      cnt[i]++; cnt[i + 1]++; cnt[i + 2]++;
+    }
+    if (cnt[i] >= 2) { cnt[i] -= 2; walk(i, melds, parts + 1, true); cnt[i] += 2; }
+    if (!isHonor(i) && rankOf(i) <= 8 && cnt[i + 1]) {
+      cnt[i]--; cnt[i + 1]--; walk(i, melds, parts + 1, pair); cnt[i]++; cnt[i + 1]++;
+    }
+    if (!isHonor(i) && rankOf(i) <= 7 && cnt[i + 2]) {
+      cnt[i]--; cnt[i + 2]--; walk(i, melds, parts + 1, pair); cnt[i]++; cnt[i + 2]++;
+    }
+    var keep = cnt[i]; cnt[i] = 0; walk(i + 1, melds, parts, pair); cnt[i] = keep;
+  }
+  walk(0, declared, 0, false);
+  return best;
+}
+
+function orphanShanten(c) {
+  var kinds = 0, pair = 0;
+  ORPHANS.forEach(function (i) { if (c[i] > 0) kinds++; if (c[i] >= 2) pair = 1; });
+  return 13 - kinds - pair;
+}
+
+function shanten(c, concealed, declared) {
+  var s = standardShanten(c, declared);
+  /* thirteen orphans is exactly 13 tiles and a pair: a kong rules it out */
+  if (concealed !== false && !declared) s = Math.min(s, orphanShanten(c));
+  return s;
+}
+
+/* ---------- winning decompositions: 4 sets + 1 pair ---------- */
+function decompose(c, declared) {
+  var cnt = c.slice(), out = [], seen = {}, need = 4 - (declared || 0);
+  function walk(i, sets, pair) {
+    if (sets.length === need && pair !== null) {
+      var key = sets.map(function (s) { return s.type + s.tile; }).sort().join(',') + '|' + pair;
+      if (total(cnt) === 0 && !seen[key]) { seen[key] = 1; out.push({ sets: sets.slice(), pair: pair }); }
+      return;
+    }
+    while (i < 34 && cnt[i] === 0) i++;
+    if (i >= 34) return;
+    if (cnt[i] >= 3 && sets.length < need) {
+      cnt[i] -= 3; sets.push({ type: 'pung', tile: i }); walk(i, sets, pair); sets.pop(); cnt[i] += 3;
+    }
+    if (!isHonor(i) && rankOf(i) <= 7 && cnt[i + 1] && cnt[i + 2] && sets.length < need) {
+      cnt[i]--; cnt[i + 1]--; cnt[i + 2]--; sets.push({ type: 'chow', tile: i });
+      walk(i, sets, pair); sets.pop(); cnt[i]++; cnt[i + 1]++; cnt[i + 2]++;
+    }
+    if (cnt[i] >= 2 && pair === null) {
+      cnt[i] -= 2; walk(i, sets, i); cnt[i] += 2;
+    }
+  }
+  walk(0, [], null);
+  return out;
+}
+
+/* ---------- faan ---------- */
+var FAAN = {
+  chicken: ['雞和', 'Chicken hand', 0],
+  selfDraw: ['自摸', 'Self-draw', 1],
+  concealed: ['門前清', 'Fully concealed', 1],
+  allChows: ['平和', 'All chows, no honours', 1],
+  seatWind: ['門風', 'Seat wind pung', 1],
+  roundWind: ['圈風', 'Round wind pung', 1],
+  dragon: ['番牌', 'Dragon pung', 1],
+  flower: ['花牌', 'Own flower', 1],
+  lastTile: ['海底撈月', 'Last tile of the wall', 1],
+  kongDraw: ['槓上開花', 'Win on kong replacement', 1],
+  robKong: ['搶槓', 'Robbing the kong', 1],
+  allPungs: ['對對和', 'All pungs', 3],
+  halfFlush: ['混一色', 'Half flush', 3],
+  smallDragons: ['小三元', 'Small three dragons', 5],
+  smallWinds: ['小四喜', 'Small four winds', 6],
+  fullFlush: ['清一色', 'Full flush', 7],
+  greatDragons: ['大三元', 'Great three dragons', 8],
+  concealedPungs: ['坎坎和', 'Concealed all pungs', 8],
+  allHonors: ['字一色', 'All honours', 10],
+  allEdges: ['全幺九', 'All terminals and honours', 10],
+  nineGates: ['九蓮寶燈', 'Nine gates', 10],
+  pureTerminals: ['清么九', 'All terminals', 13],
+  greatWinds: ['大四喜', 'Great four winds', 13],
+  orphans: ['十三么', 'Thirteen orphans', 13],
+  fourKongs: ['十八羅漢', 'Four kongs', 13]
+};
+var LIMIT = 13;
+/* each key hides the keys it already pays for, so nothing is counted twice */
+var ABSORBS = {
+  fullFlush: ['halfFlush'],
+  allHonors: ['allPungs', 'halfFlush', 'dragon', 'seatWind', 'roundWind', 'allEdges', 'smallDragons', 'smallWinds'],
+  allEdges: ['allPungs'],
+  pureTerminals: ['allPungs', 'allEdges', 'fullFlush', 'halfFlush'],
+  greatDragons: ['dragon', 'smallDragons'],
+  smallDragons: ['dragon'],
+  greatWinds: ['seatWind', 'roundWind', 'smallWinds'],
+  smallWinds: ['seatWind', 'roundWind'],
+  concealedPungs: ['allPungs', 'concealed'],
+  nineGates: ['fullFlush', 'halfFlush', 'concealed'],
+  orphans: ['concealed', 'allEdges', 'halfFlush'],
+  fourKongs: ['allPungs']
+};
+
+function meldTiles(m) {
+  if (m.type === 'chow') return [m.tile, m.tile + 1, m.tile + 2];
+  return m.type === 'kong' ? [m.tile, m.tile, m.tile, m.tile] : [m.tile, m.tile, m.tile];
+}
+/* ctx.kongs is the older spelling of a kong-only meld list */
+function allMelds(ctx) {
+  return (ctx.melds || []).concat((ctx.kongs || []).map(function (k) {
+    return { type: 'kong', tile: k.tile, concealed: k.concealed };
+  }));
+}
+
+function isNineGates(c) {
+  for (var s = 0; s < 3; s++) {
+    var ok = true, extra = 0, r;
+    for (var i = 0; i < 34; i++) if (c[i] && suitOf(i) !== s) { ok = false; break; }
+    if (!ok) continue;
+    for (r = 1; r <= 9; r++) {
+      var need = (r === 1 || r === 9) ? 3 : 1, have = c[s * 9 + r - 1];
+      if (have < need) { ok = false; break; }
+      extra += have - need;
+    }
+    if (ok && extra === 1) return true;
+  }
+  return false;
+}
+
+/* ctx: {seat, round, selfDraw, concealed, flowers, lastTile, kongDraw, robKong} */
+function scoreDecomposition(d, c, ctx) {
+  var hits = [], add = function (k, n) { hits.push({ key: k, faan: n === undefined ? FAAN[k][2] : n }); };
+  var melds = allMelds(ctx);
+  var cAll = c.slice();
+  melds.forEach(function (m) { meldTiles(m).forEach(function (t) { cAll[t] += 1; }); });
+  var tiles = countsToTiles(cAll);
+  var suits = {}, honors = 0;
+  tiles.forEach(function (t) { if (isHonor(t)) honors++; else suits[suitOf(t)] = 1; });
+  var suitCount = Object.keys(suits).length;
+  var allSets = d.sets.concat(melds.map(function (m) {
+    return { type: m.type === 'chow' ? 'chow' : 'pung', tile: m.tile,
+      kong: m.type === 'kong', concealed: m.concealed };
+  }));
+  var pungs = allSets.filter(function (s) { return s.type === 'pung'; });
+  var chows = allSets.filter(function (s) { return s.type === 'chow'; });
+
+  if (ctx.selfDraw) add('selfDraw');
+  if (ctx.concealed) add('concealed');
+  if (ctx.lastTile) add('lastTile');
+  if (ctx.kongDraw) add('kongDraw');
+  if (ctx.robKong) add('robKong');
+  if (ctx.flowers) add('flower', ctx.flowers * FAAN.flower[2]);
+
+  if (chows.length === 4 && honors === 0) add('allChows');
+  if (pungs.length === 4) add('allPungs');
+  if (pungs.length === 4 && ctx.concealed) add('concealedPungs');
+
+  var dragonPungs = pungs.filter(function (s) { return DRAGONS.indexOf(s.tile) >= 0; }).length;
+  for (var i = 0; i < dragonPungs; i++) add('dragon');
+  if (dragonPungs === 3) add('greatDragons');
+  else if (dragonPungs === 2 && DRAGONS.indexOf(d.pair) >= 0) add('smallDragons');
+
+  var windPungs = pungs.filter(function (s) { return WINDS.indexOf(s.tile) >= 0; });
+  if (windPungs.some(function (s) { return s.tile === 27 + ctx.seat; })) add('seatWind');
+  if (windPungs.some(function (s) { return s.tile === 27 + ctx.round; })) add('roundWind');
+  if (windPungs.length === 4) add('greatWinds');
+  else if (windPungs.length === 3 && WINDS.indexOf(d.pair) >= 0) add('smallWinds');
+
+  if (suitCount === 1 && honors === 0) add('fullFlush');
+  else if (suitCount === 1 && honors > 0) add('halfFlush');
+  if (suitCount === 0) add('allHonors');
+
+  var everyEdge = tiles.every(isEdge);
+  if (everyEdge && pungs.length === 4 && suitCount > 0) add(tiles.every(function (t) { return !isHonor(t); }) ? 'pureTerminals' : 'allEdges');
+  if (ctx.concealed && !melds.length && isNineGates(cAll)) add('nineGates');
+  if (melds.filter(function (m) { return m.type === 'kong'; }).length === 4) add('fourKongs');
+
+  var hidden = {};
+  hits.forEach(function (h) { (ABSORBS[h.key] || []).forEach(function (k) { hidden[k] = 1; }); });
+  var kept = hits.filter(function (h) { return !hidden[h.key]; });
+  var faan = kept.reduce(function (a, h) { return a + h.faan; }, 0);
+  if (!kept.length) kept.push({ key: 'chicken', faan: 0 });
+  return { faan: Math.min(faan, LIMIT), raw: faan, patterns: kept, sets: allSets, pair: d.pair };
+}
+
+/* HK old-style payment units by faan (house rules vary; 13 faan is the limit) */
+var UNITS = [1, 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384];
+function units(faan) { return UNITS[Math.min(faan, LIMIT)]; }
+
+function score(c, ctx) {
+  ctx = Object.assign({ seat: 0, round: 0, selfDraw: false, concealed: true, flowers: 0, kongs: [] }, ctx || {});
+  var ms = allMelds(ctx), nk = ms.length;
+  if (ms.some(function (m) { return !m.concealed; })) ctx.concealed = false;
+  /* every declared meld takes one set, and three tiles, out of the rack */
+  if (total(c) !== 14 - 3 * nk) return null;
+  var best = null;
+  decompose(c, nk).forEach(function (d) {
+    var s = scoreDecomposition(d, c, ctx);
+    if (!best || s.faan > best.faan) best = s;
+  });
+  if (ctx.concealed && !nk && orphanShanten(c) === -1) {
+    var hits = [{ key: 'orphans', faan: FAAN.orphans[2] }];
+    if (ctx.selfDraw) hits.push({ key: 'selfDraw', faan: 1 });
+    if (ctx.flowers) hits.push({ key: 'flower', faan: ctx.flowers });
+    var f = Math.min(hits.reduce(function (a, h) { return a + h.faan; }, 0), LIMIT);
+    if (!best || f > best.faan) best = { faan: f, raw: f, patterns: hits, sets: [], pair: null, orphans: true };
+  }
+  if (best) best.units = units(best.faan);
+  return best;
+}
+
+/* ---------- waits and discards ---------- */
+function liveCopies(c, i, seen) { return Math.max(0, 4 - c[i] - ((seen && seen[i]) || 0)); }
+
+/* Tiles that bring a 13-tile hand closer to (or into) a win. */
+function ukeire(c, ctx, seen) {
+  var ms = allMelds(ctx), nk = ms.length, gone = {}, i;
+  ms.forEach(function (m) {
+    meldTiles(m).forEach(function (t) { gone[t] = (gone[t] || 0) + 1; });
+  });
+  if (seen) for (i in seen) gone[i] = (gone[i] || 0) + seen[i];
+  var base = shanten(c, ctx.concealed, nk), out = [];
+  for (i = 0; i < 34; i++) {
+    if (c[i] + (gone[i] || 0) >= 4) continue;
+    c[i]++;
+    var after = shanten(c, ctx.concealed, nk);
+    if (after < base) {
+      var entry = { tile: i, live: liveCopies(c, i, gone) + 1, winning: after === -1 };
+      if (after === -1) { var s = score(c, ctx); entry.faan = s ? s.faan : 0; entry.patterns = s ? s.patterns : []; }
+      out.push(entry);
+    }
+    c[i]--;
+  }
+  return { shanten: base, tiles: out, live: out.reduce(function (a, t) { return a + t.live; }, 0) };
+}
+
+/* For a 14-tile hand: rank every discard by what it leaves behind. */
+function discards(c, ctx, seen) {
+  var out = [], i;
+  for (i = 0; i < 34; i++) {
+    if (!c[i]) continue;
+    c[i]--;
+    var u = ukeire(c, ctx, seen);
+    out.push({ tile: i, shanten: u.shanten, live: u.live, waits: u.tiles });
+    c[i]++;
+  }
+  out.sort(function (a, b) { return a.shanten - b.shanten || b.live - a.live || a.tile - b.tile; });
+  return out;
+}
+
+root.HKM = {
+  SUIT_CH: SUIT_CH, HONOR_CH: HONOR_CH, FAAN: FAAN, LIMIT: LIMIT, ORPHANS: ORPHANS,
+  parseFull: parseFull, formatHand: formatHand, meldTiles: meldTiles, allMelds: allMelds,
+  isHonor: isHonor, suitOf: suitOf, rankOf: rankOf, isTerminal: isTerminal, isEdge: isEdge,
+  tileName: tileName, parseHand: parseHand, countsToTiles: countsToTiles, total: total,
+  shanten: shanten, standardShanten: standardShanten, orphanShanten: orphanShanten,
+  decompose: decompose, score: score, units: units, ukeire: ukeire, discards: discards
+};
+})(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : globalThis));
+/* ===== game: source of truth is game.js, checked by test.js ===== */
+/* Hong Kong mahjong, four seats, one wall. You are seat 0; the other three are bots
+   that play tile efficiency off the same engine the coach uses. */
+(function (root, E) {
+'use strict';
+
+var HUMAN = 0;
+var WIND = ['東', '南', '西', '北'];
+
+function rng(seed) {
+  var a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seatWind(g, seat) { return (seat - g.dealer + 4) % 4; }
+function nextSeat(s) { return (s + 1) % 4; }
+/* the only seat allowed to chow a discard is the one to the discarder's right */
+function isLeftOf(g, seat, from) { return nextSeat(from) === seat; }
+
+function ctxFor(g, seat, opts) {
+  var s = g.seats[seat];
+  return {
+    seat: seatWind(g, seat), round: g.round,
+    selfDraw: !!(opts && opts.selfDraw),
+    lastTile: !!(opts && opts.lastTile),
+    kongDraw: !!(opts && opts.kongDraw),
+    concealed: s.melds.every(function (m) { return m.concealed; }),
+    flowers: 0, melds: s.melds
+  };
+}
+function handSize(seat) { return 14 - 3 * seat.melds.length; }
+function shantenOf(g, seat) {
+  var s = g.seats[seat];
+  return E.shanten(s.counts, ctxFor(g, seat).concealed, s.melds.length);
+}
+
+function newGame(opts) {
+  opts = opts || {};
+  var rand = rng(opts.seed === undefined ? (Math.random() * 1e9) | 0 : opts.seed);
+  var wall = [], i, k;
+  for (i = 0; i < 34; i++) for (k = 0; k < 4; k++) wall.push(i);
+  for (i = wall.length - 1; i > 0; i--) {
+    var j = Math.floor(rand() * (i + 1)), tmp = wall[i];
+    wall[i] = wall[j]; wall[j] = tmp;
+  }
+  var dealer = opts.dealer === undefined ? 0 : opts.dealer;
+  var g = {
+    wall: wall, dealer: dealer, round: opts.round === undefined ? 0 : opts.round,
+    minFaan: opts.minFaan === undefined ? 0 : opts.minFaan,
+    seats: [0, 1, 2, 3].map(function () {
+      return { counts: new Array(34).fill(0), melds: [], discards: [] };
+    }),
+    turn: dealer, phase: 'discard', lastDiscard: null, offer: null,
+    passed: [], log: [], result: null, rand: rand
+  };
+  for (k = 0; k < 13; k++) for (i = 0; i < 4; i++) g.seats[i].counts[g.wall.shift()]++;
+  g.drawn = g.wall.shift();
+  g.seats[dealer].counts[g.drawn]++;
+  say(g, WIND[seatWind(g, dealer)] + ' deals');
+  return g;
+}
+
+function say(g, text, seat) { g.log.push({ text: text, seat: seat }); }
+
+/* ---------- what a seat may claim ---------- */
+function winWith(g, seat, tile, opts) {
+  var s = g.seats[seat], c = s.counts.slice();
+  if (tile !== undefined && tile !== null) c[tile]++;
+  if (E.total(c) !== handSize(s)) return null;
+  var sc = E.score(c, ctxFor(g, seat, opts));
+  if (!sc || sc.faan < g.minFaan) return null;
+  return sc;
+}
+
+function claimsFor(g, seat, tile, from) {
+  var s = g.seats[seat], out = [];
+  if (seat === from) return out;
+  var win = winWith(g, seat, tile);
+  if (win) out.push({ kind: 'win', tile: tile, score: win });
+  if (s.counts[tile] >= 3) out.push({ kind: 'kong', tile: tile });
+  if (s.counts[tile] >= 2) out.push({ kind: 'pung', tile: tile });
+  if (isLeftOf(g, seat, from) && !E.isHonor(tile)) {
+    var r = E.rankOf(tile);
+    [-2, -1, 0].forEach(function (off) {
+      var base = tile + off;
+      if (r + off < 1 || r + off + 2 > 9) return;
+      var a = base, b = base + 1, cc = base + 2;
+      if ([a, b, cc].every(function (t) { return t === tile || s.counts[t] > 0; })) {
+        out.push({ kind: 'chow', tile: base, used: [a, b, cc].filter(function (t) { return t !== tile; }) });
+      }
+    });
+  }
+  return out;
+}
+
+/* a claim is worth making if it moves the hand forward */
+function claimHelps(g, seat, claim) {
+  if (claim.kind === 'win') return true;
+  var s = g.seats[seat], before = shantenOf(g, seat);
+  var c = s.counts.slice();
+  if (claim.kind === 'chow') claim.used.forEach(function (t) { c[t]--; });
+  else c[claim.tile] -= claim.kind === 'kong' ? 3 : 2;
+  var after = E.shanten(c, false, s.melds.length + 1);
+  return claim.kind === 'kong' ? after <= before : after < before;
+}
+
+function applyClaim(g, seat, claim, from) {
+  var s = g.seats[seat];
+  g.seats[from].discards.pop();
+  if (claim.kind === 'chow') claim.used.forEach(function (t) { s.counts[t]--; });
+  else s.counts[claim.tile] -= claim.kind === 'kong' ? 3 : 2;
+  s.melds.push({ type: claim.kind, tile: claim.tile, concealed: false });
+  say(g, WIND[seatWind(g, seat)] + ' ' + ({ chow: '上', pung: '碰', kong: '槓' })[claim.kind] +
+    ' ' + E.tileName(claim.tile), seat);
+  g.lastDiscard = null; g.passed = []; g.offer = null; g.turn = seat;
+  if (claim.kind === 'kong') { drawTile(g, seat, true); } else { g.drawn = null; g.phase = 'discard'; }
+}
+
+/* winning on a discard takes that tile out of the pond and into the hand */
+function finish(g, seat, score, how, d) {
+  if (d) {
+    g.seats[seat].counts[d.tile]++;
+    g.seats[d.from].discards.pop();
+  }
+  g.phase = 'over';
+  g.lastDiscard = null; g.offer = null; g.drawn = d ? d.tile : g.drawn;
+  g.result = { seat: seat, score: score, how: how, units: score.units,
+    from: d ? d.from : null, tile: d ? d.tile : null };
+  say(g, WIND[seatWind(g, seat)] + ' 食糊 — ' + score.faan + ' faan', seat);
+}
+
+function drawTile(g, seat, afterKong) {
+  if (!g.wall.length) {
+    g.phase = 'over'; g.result = { seat: null, how: 'draw' };
+    say(g, '流局 — wall exhausted, nobody wins');
+    return;
+  }
+  g.drawn = g.wall.shift();
+  g.seats[seat].counts[g.drawn]++;
+  g.turn = seat; g.phase = 'discard'; g.lastTile = g.wall.length === 0;
+  g.kongDraw = !!afterKong;
+}
+
+/* ---------- reading the table: who is dangerous, and which tile feeds them ----------
+   HK has no furiten, so a tile an opponent threw is not provably safe — only likelier
+   to be safe. Everything here is an estimate from what is face-up. */
+var DRAGONS = [31, 32, 33];
+
+/* copies of a tile already accounted for: every pond, every laid-down set, your own rack */
+function seen(g, from, tile) {
+  var n = g.seats[from].counts[tile];
+  g.seats.forEach(function (s) {
+    s.discards.forEach(function (t) { if (t === tile) n++; });
+    s.melds.forEach(function (m) {
+      E.meldTiles(m).forEach(function (t) { if (t === tile) n++; });
+    });
+  });
+  return Math.min(4, n);
+}
+
+/* a seat that stops throwing one suit while throwing the other two is chasing a flush */
+function flushSuit(g, seat) {
+  var s = g.seats[seat], d = [0, 0, 0], i;
+  if (s.discards.length < 5) return null;
+  s.discards.forEach(function (t) { if (!E.isHonor(t)) d[E.suitOf(t)]++; });
+  var meldSuits = {};
+  s.melds.forEach(function (m) { if (!E.isHonor(m.tile)) meldSuits[E.suitOf(m.tile)] = 1; });
+  var keys = Object.keys(meldSuits);
+  for (i = 0; i < 3; i++) {
+    // both other suits must be in their pond: one untouched suit among three proves nothing
+    if (d[i] === 0 && d[(i + 1) % 3] > 0 && d[(i + 2) % 3] > 0 &&
+        d[(i + 1) % 3] + d[(i + 2) % 3] >= 4 && (!keys.length || meldSuits[i])) return i;
+  }
+  return null;
+}
+
+/* 0 = harmless, 1 = almost certainly tenpai on something big */
+function threat(g, seat) {
+  var s = g.seats[seat], t = s.melds.length * 0.2;
+  s.melds.forEach(function (m) {
+    if (DRAGONS.indexOf(m.tile) >= 0) t += 0.12;
+    if (m.tile === 27 + seatWind(g, seat) || m.tile === 27 + g.round) t += 0.1;
+  });
+  if (flushSuit(g, seat) !== null) t += 0.2;
+  t += (1 - g.wall.length / 83) * 0.25;
+  return Math.max(0, Math.min(1, t));
+}
+
+/* 0 = they can hardly use it, 1 = it finishes a lot of hands */
+function danger(g, from, tile, seat) {
+  var s = g.seats[seat], d;
+  if (E.isHonor(tile)) d = 0.3;
+  else d = 0.35 + 0.1 * (4 - Math.abs(5 - E.rankOf(tile)));
+  if (s.discards.indexOf(tile) >= 0) d *= 0.35;
+  var flush = flushSuit(g, seat);
+  if (flush !== null) {
+    d *= (E.isHonor(tile) || E.suitOf(tile) === flush) ? 1.6 : 0.25;
+  }
+  d *= 0.4 + (4 - seen(g, from, tile)) / 4 * 0.6;
+  return Math.max(0, Math.min(1, d));
+}
+
+var RISK_WORD = [[0.08, 'safe'], [0.18, 'fair'], [0.32, 'live'], [1, 'hot']];
+/* the worst case across the three opponents */
+function risk(g, from, tile) {
+  var worst = { score: 0, seat: null, danger: 0, threat: 0 };
+  [0, 1, 2, 3].forEach(function (s) {
+    if (s === from) return;
+    var th = threat(g, s), dg = danger(g, from, tile, s), sc = th * dg;
+    if (sc > worst.score) worst = { score: sc, seat: s, danger: dg, threat: th };
+  });
+  worst.word = RISK_WORD.find(function (r) { return worst.score <= r[0]; })[1];
+  if (worst.seat !== null) {
+    var fs = flushSuit(g, worst.seat), bits = [];
+    if (g.seats[worst.seat].melds.length) bits.push(g.seats[worst.seat].melds.length + ' set(s) down');
+    if (fs !== null) bits.push('has stopped throwing ' + E.SUIT_CH[fs]);
+    if (g.seats[worst.seat].discards.indexOf(tile) >= 0) bits.push('threw this tile themselves');
+    worst.why = HKG_WIND[seatWind(g, worst.seat)] + (bits.length ? ' — ' + bits.join(', ') : '');
+  }
+  return worst;
+}
+
+/* ---------- bots ---------- */
+/* speed when nobody is scary; when someone is, pay shanten for a quiet tile */
+function botDiscard(g, seat) {
+  var s = g.seats[seat];
+  var ranked = E.discards(s.counts, ctxFor(g, seat));
+  if (!ranked.length) return E.countsToTiles(s.counts)[0];
+  var best = ranked[0];
+  var push = best.shanten <= 0 ? 0.55 : best.shanten === 1 ? 0.85 : 1.15;
+  var scored = ranked.map(function (d) {
+    var loss = (d.shanten - best.shanten) + (best.live - d.live) / Math.max(1, best.live) * 0.5;
+    return { tile: d.tile, cost: loss + risk(g, seat, d.tile).score * push * 2.2 };
+  });
+  scored.sort(function (a, b) { return a.cost - b.cost || a.tile - b.tile; });
+  return scored[0].tile;
+}
+
+/* ---------- one beat of play ---------- */
+function step(g) {
+  if (g.phase === 'over') return null;
+
+  if (g.phase === 'discard') {
+    var seat = g.turn;
+    var self = winWith(g, seat, null, { selfDraw: true, lastTile: g.lastTile, kongDraw: g.kongDraw });
+    if (self) {
+      if (seat === HUMAN) { g.offer = { seat: HUMAN, claims: [{ kind: 'win', tile: null, score: self }], selfDraw: true }; return { wait: 'offer' }; }
+      finish(g, seat, self, 'selfDraw'); return { event: 'win' };
+    }
+    if (seat === HUMAN) {
+      var kongs = [];
+      for (var t = 0; t < 34; t++) if (g.seats[HUMAN].counts[t] >= 4) kongs.push({ kind: 'concealedKong', tile: t });
+      g.selfKongs = kongs;
+      return { wait: 'discard' };
+    }
+    discard(g, seat, botDiscard(g, seat));
+    return { event: 'discard', seat: seat, tile: g.lastDiscard.tile };
+  }
+
+  if (g.phase === 'claim') {
+    var d = g.lastDiscard, order = [], i, s2;
+    for (i = 1; i <= 3; i++) {
+      s2 = (d.from + i) % 4;
+      if (g.passed.indexOf(s2) >= 0) continue;
+      claimsFor(g, s2, d.tile, d.from).forEach(function (c) { order.push({ seat: s2, claim: c }); });
+    }
+    var rank = { win: 0, kong: 1, pung: 1, chow: 2 };
+    order.sort(function (a, b) { return rank[a.claim.kind] - rank[b.claim.kind]; });
+    var mine = order.filter(function (o) { return o.seat === HUMAN && (o.claim.kind === 'win' || claimHelps(g, HUMAN, o.claim)); });
+    var best = order.filter(function (o) { return o.seat !== HUMAN && claimHelps(g, o.seat, o.claim); })[0];
+    if (mine.length && (!best || rank[mine[0].claim.kind] <= rank[best.claim.kind])) {
+      g.offer = { seat: HUMAN, claims: mine.map(function (o) { return o.claim; }), from: d.from };
+      return { wait: 'offer' };
+    }
+    if (best) {
+      if (best.claim.kind === 'win') { finish(g, best.seat, best.claim.score, 'discard', d); return { event: 'win' }; }
+      applyClaim(g, best.seat, best.claim, d.from);
+      return { event: 'claim', seat: best.seat };
+    }
+    g.lastDiscard = null; g.passed = [];
+    drawTile(g, nextSeat(d.from));
+    return { event: 'draw', seat: g.turn };
+  }
+  return null;
+}
+
+function discard(g, seat, tile) {
+  var s = g.seats[seat];
+  if (!s.counts[tile]) return false;
+  s.counts[tile]--;
+  s.discards.push(tile);
+  say(g, WIND[seatWind(g, seat)] + ' 打 ' + E.tileName(tile), seat);
+  g.lastDiscard = { tile: tile, from: seat };
+  g.drawn = null; g.passed = []; g.phase = 'claim'; g.selfKongs = null;
+  return true;
+}
+
+/* ---------- what the page calls ---------- */
+function humanDiscard(g, tile) {
+  if (g.phase !== 'discard' || g.turn !== HUMAN) return false;
+  return discard(g, HUMAN, tile);
+}
+function humanConcealedKong(g, tile) {
+  if (g.phase !== 'discard' || g.turn !== HUMAN || g.seats[HUMAN].counts[tile] < 4) return false;
+  g.seats[HUMAN].counts[tile] -= 4;
+  g.seats[HUMAN].melds.push({ type: 'kong', tile: tile, concealed: true });
+  say(g, '你 暗槓 ' + E.tileName(tile), HUMAN);
+  drawTile(g, HUMAN, true);
+  return true;
+}
+function humanTake(g, claim) {
+  var o = g.offer;
+  if (!o) return false;
+  g.offer = null;
+  if (claim.kind === 'win') {
+    finish(g, HUMAN, claim.score, o.selfDraw ? 'selfDraw' : 'discard',
+      o.selfDraw ? null : { tile: claim.tile, from: o.from });
+    return true;
+  }
+  applyClaim(g, HUMAN, claim, o.from);
+  return true;
+}
+function humanPass(g) {
+  if (!g.offer) return false;
+  var o = g.offer;
+  g.offer = null;
+  if (o.selfDraw) { g.phase = 'discard'; return true; }
+  g.passed.push(HUMAN);
+  return true;
+}
+
+var HKG_WIND = WIND;
+root.HKG = {
+  HUMAN: HUMAN, WIND: WIND, threat: threat, danger: danger, risk: risk, flushSuit: flushSuit, seen: seen, newGame: newGame, step: step, seatWind: seatWind,
+  handSize: handSize, shantenOf: shantenOf, ctxFor: ctxFor, claimsFor: claimsFor,
+  humanDiscard: humanDiscard, humanConcealedKong: humanConcealedKong,
+  humanTake: humanTake, humanPass: humanPass, botDiscard: botDiscard, winWith: winWith
+};
+})(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : globalThis),
+   (typeof module !== 'undefined' && module.exports ? require('./engine.js').HKM : (typeof window !== 'undefined' ? window.HKM : globalThis.HKM)));
+/* ===== tile faces, drawn after a real Hong Kong set ===== */
+var E = HKM;
+var G = '#0f6b3f', R = '#bf2318', K = '#1d1a17', BL = '#1b3f73', FACE = '#fcfbf8';
+var NUMERAL = ['一', '二', '三', '四', '伍', '六', '七', '八', '九'];
+var SPOTS = {
+  1: [[50, 50]], 2: [[50, 29], [50, 71]], 3: [[27, 23], [50, 50], [73, 77]],
+  4: [[31, 30], [69, 30], [31, 70], [69, 70]],
+  5: [[27, 26], [73, 26], [50, 50], [27, 74], [73, 74]],
+  6: [[31, 22], [69, 22], [31, 50], [69, 50], [31, 78], [69, 78]],
+  7: [[25, 17], [50, 17], [75, 17], [33, 51], [67, 51], [33, 80], [67, 80]],
+  8: [[33, 14], [67, 14], [33, 38], [67, 38], [33, 62], [67, 62], [33, 86], [67, 86]],
+  9: [[25, 20], [50, 20], [75, 20], [25, 50], [50, 50], [75, 50], [25, 80], [50, 80], [75, 80]]
+};
+var DOT_COLS = { 2: [G, K], 3: [R, G, K], 4: [G, G, K, K], 5: [G, K, R, K, G],
+  6: [G, G, R, R, R, R], 7: [R, R, R, G, G, G, G], 8: [K, G, K, G, K, G, K, G],
+  9: [R, R, R, G, G, G, K, K, K] };
+var BAM_COLS = { 2: [G, G], 3: [G, G, G], 4: [G, G, G, G], 5: [G, G, R, G, G],
+  6: [G, G, G, G, G, G], 7: [R, G, G, G, G, G, G], 8: [G, G, G, G],
+  9: [R, G, R, R, G, R, R, G, R] };
+
+function f(n) { return Math.round(n * 100) / 100; }
+function svgWrap(inner) { return '<svg viewBox="0 0 100 100" aria-hidden="true">' + inner + '</svg>'; }
+
+/* a dot is a coin: outer ring, four spokes, a solid centre */
+function coin(cx, cy, r, c) {
+  var ri = r * 0.34, sw = r * 0.30, out = '', a, t;
+  for (a = 0; a < 4; a++) {
+    t = a * Math.PI / 2;
+    out += '<line x1="' + f(cx + Math.cos(t) * ri) + '" y1="' + f(cy + Math.sin(t) * ri) +
+      '" x2="' + f(cx + Math.cos(t) * r) + '" y2="' + f(cy + Math.sin(t) * r) +
+      '" stroke="' + c + '" stroke-width="' + f(sw * 0.6) + '"/>';
+  }
+  return '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(r) + '" fill="' + FACE +
+    '" stroke="' + c + '" stroke-width="' + f(sw) + '"/>' + out +
+    '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(ri) + '" fill="' + c + '"/>';
+}
+
+function medallion() {
+  var p = '', a, t;
+  for (a = 0; a < 8; a++) {
+    t = a * Math.PI / 4;
+    p += '<circle cx="' + f(50 + Math.cos(t) * 19) + '" cy="' + f(50 + Math.sin(t) * 19) +
+      '" r="7.5" fill="none" stroke="' + G + '" stroke-width="2.4"/>';
+  }
+  return '<circle cx="50" cy="50" r="34" fill="none" stroke="' + G + '" stroke-width="2.6"/>' +
+    '<circle cx="50" cy="50" r="29.5" fill="none" stroke="' + G + '" stroke-width="1.1"/>' +
+    p + '<circle cx="50" cy="50" r="8" fill="' + R + '"/>' +
+    '<circle cx="50" cy="50" r="3.2" fill="' + FACE + '"/>';
+}
+
+function dotFace(rank) {
+  if (rank === 1) return svgWrap(medallion());
+  var r = rank <= 4 ? 14 : rank <= 6 ? 12.5 : 10.5, cols = DOT_COLS[rank];
+  return svgWrap(SPOTS[rank].map(function (p, i) { return coin(p[0], p[1], r, cols[i]); }).join(''));
+}
+
+/* a bamboo is a string of beads on a spine */
+function stick(cx, cy, h, w, c) {
+  var n = 4, out = '', step = h / (n - 1), i;
+  out = '<line x1="' + f(cx) + '" y1="' + f(cy - h / 2) + '" x2="' + f(cx) + '" y2="' + f(cy + h / 2) +
+    '" stroke="' + c + '" stroke-width="' + f(w * 0.3) + '"/>';
+  for (i = 0; i < n; i++) {
+    out += '<circle cx="' + f(cx) + '" cy="' + f(cy - h / 2 + i * step) + '" r="' + f(w / 2) +
+      '" fill="' + FACE + '" stroke="' + c + '" stroke-width="' + f(w * 0.32) + '"/>';
+  }
+  return out;
+}
+
+function bird() {
+  return '<path d="M50 60 C38 52 31 37 31 23" fill="none" stroke="' + G + '" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<path d="M50 60 C45 47 43 32 47 18" fill="none" stroke="' + G + '" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<path d="M51 60 C57 49 61 37 63 25" fill="none" stroke="' + G + '" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<circle cx="31" cy="21" r="3.6" fill="' + G + '"/><circle cx="47" cy="16" r="3.6" fill="' + G + '"/>' +
+    '<circle cx="63" cy="23" r="3.6" fill="' + G + '"/>' +
+    '<ellipse cx="52" cy="66" rx="11" ry="14" fill="' + R + '"/>' +
+    '<circle cx="61" cy="50" r="6.2" fill="' + R + '"/>' +
+    '<path d="M66 47 L76 45 L66 51 Z" fill="' + G + '"/>' +
+    '<circle cx="62.5" cy="48.5" r="1.3" fill="' + FACE + '"/>' +
+    '<path d="M48 80 L43 88 M56 80 L61 88" stroke="' + G + '" stroke-width="2.2" stroke-linecap="round" fill="none"/>';
+}
+
+function bambooFace(rank) {
+  if (rank === 1) return svgWrap(bird());
+  if (rank === 8) {
+    return svgWrap([[34, 29, -30], [66, 29, 30], [34, 71, 30], [66, 71, -30]].map(function (p) {
+      return '<g transform="rotate(' + p[2] + ' ' + p[0] + ' ' + p[1] + ')">' + stick(p[0], p[1], 34, 11, G) + '</g>';
+    }).join(''));
+  }
+  var h = rank <= 4 ? 34 : rank <= 6 ? 27 : 21, w = rank <= 4 ? 12 : rank <= 6 ? 10.5 : 9;
+  var cols = BAM_COLS[rank];
+  return svgWrap(SPOTS[rank].map(function (p, i) { return stick(p[0], p[1], h, w, cols[i]); }).join(''));
+}
+
+function tileFace(i) {
+  if (E.isHonor(i)) {
+    var ch = E.HONOR_CH[i - 27];
+    if (ch === '白') {
+      return svgWrap('<rect x="19" y="13" width="62" height="74" rx="2" fill="none" stroke="' + BL + '" stroke-width="3.6"/>' +
+        '<rect x="28.5" y="22.5" width="43" height="55" rx="1" fill="none" stroke="' + BL + '" stroke-width="1.8"/>');
+    }
+    var col = ch === '中' ? R : ch === '發' ? G : K;
+    return '<span class="glyph" style="color:' + col + '">' + ch + '</span>';
+  }
+  var rank = E.rankOf(i), suit = E.suitOf(i);
+  if (suit === 0) return dotFace(rank);
+  if (suit === 1) return bambooFace(rank);
+  return '<span class="glyph wan"><i>' + NUMERAL[rank - 1] + '</i><em>萬</em></span>';
+}
+
+function tileEl(i, cls, onClick, disabled) {
+  var el = document.createElement(onClick ? 'button' : 'span');
+  el.className = 'tile ' + (cls || '');
+  el.innerHTML = tileFace(i);
+  if (onClick) {
+    el.type = 'button';
+    el.setAttribute('aria-label', E.tileName(i));
+    el.title = E.tileName(i);
+    if (disabled) el.disabled = true; else el.addEventListener('click', onClick);
+  }
+  return el;
+}
+
+/* ===== the page ===== */
+var $ = function (s) { return document.querySelector(s); };
+var g = null, timer = null, sampler = null, asking = false, chat = [];
+
+/* Splitting a word into elements throws away the font's kerning, so the pairs that
+   relied on it collide at koi's -.045em tracking: J hooks .056em left of its own
+   origin to tuck under the H, and T's crossbar reaches back under P's bowl at the
+   same height as the bowl itself. Keyed by pair, and measured: each value is what
+   it takes to land that pair's ink gap near .017em, where the untouched pairs sit. */
+var KERN = { MA: 0.063, AH: 0.058, HJ: 0.03, PT: 0.02 };
+var RISE_FROM = 0.15, RISE_STEP = 0.045, RISE_DUR = 0.9;
+function renderWord(id, text, offset) {
+  var host = $(id);
+  host.textContent = '';
+  text.split('').forEach(function (ch, i) {
+    var el = document.createElement('i');
+    el.textContent = ch;
+    var k = i && KERN[text[i - 1] + ch];
+    if (k) el.style.marginLeft = k + 'em';
+    el.style.animationDelay = (RISE_FROM + (offset + i) * RISE_STEP).toFixed(3) + 's';
+    host.appendChild(el);
+  });
+}
+
+/* ---- menu ---- */
+/* overflow:hidden alone still lets iOS drag the page under the overlay, so the body is
+   pinned at its current offset and put back where it was on close */
+var menuScrollY = 0;
+function setMenu(open) {
+  var m = $('#menu'), b = $('#menuBtn'), body = document.body;
+  if (open && m.hidden) menuScrollY = window.scrollY;
+  m.hidden = !open;
+  document.documentElement.style.overflow = open ? 'hidden' : '';
+  body.style.position = open ? 'fixed' : '';
+  body.style.top = open ? -menuScrollY + 'px' : '';
+  body.style.left = open ? '0' : '';
+  body.style.right = open ? '0' : '';
+  if (!open) window.scrollTo(0, menuScrollY);
+  b.setAttribute('aria-expanded', String(open));
+  b.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  $('#menuIcon').setAttribute('d', open ? 'M5 5l14 14M19 5 5 19' : 'M3 6h18M3 12h18M3 18h18');
+}
+
+/* ---- the table ---- */
+function seatLabel(seat) {
+  return HKG.WIND[HKG.seatWind(g, seat)];
+}
+function meldEl(m) {
+  var box = document.createElement('div');
+  box.className = 'set';
+  E.meldTiles(m).forEach(function (t, i) {
+    var down = m.concealed && (i === 0 || i === 3);
+    var el = document.createElement('span');
+    el.className = 'tile xs' + (down ? ' back' : '');
+    if (!down) el.innerHTML = tileFace(t);
+    box.appendChild(el);
+  });
+  return box;
+}
+function backsEl(n) {
+  var box = document.createElement('div');
+  box.className = 'set backs';
+  for (var i = 0; i < n; i++) {
+    var el = document.createElement('span');
+    el.className = 'tile xs back';
+    box.appendChild(el);
+  }
+  return box;
+}
+function seatRow(seat) {
+  var s = g.seats[seat], me = seat === HKG.HUMAN;
+  var row = document.createElement('div');
+  row.className = 'seat' + (me ? ' me' : '') + (g.turn === seat && g.phase !== 'over' ? ' turn' : '');
+  var id = document.createElement('div');
+  id.className = 'seat-id';
+  var tag = seat === g.dealer ? 'dealer' : (me ? 'you' : '');
+  id.innerHTML = '<span class="w">' + seatLabel(seat) + '</span><span class="n">' + tag + '</span>';
+  row.appendChild(id);
+  var hand = document.createElement('div');
+  hand.className = 'seat-hand';
+  /* their concealed tiles face you as backs; the count was never the interesting part */
+  if (!me) hand.appendChild(backsEl(E.total(s.counts)));
+  s.melds.forEach(function (m) { hand.appendChild(meldEl(m)); });
+  row.appendChild(hand);
+  var pond = document.createElement('div');
+  pond.className = 'seat-pond';
+  s.discards.forEach(function (t) {
+    var el = document.createElement('span');
+    el.className = 'tile xs';
+    el.innerHTML = tileFace(t);
+    pond.appendChild(el);
+  });
+  row.appendChild(pond);
+  return row;
+}
+function renderTable() {
+  var f = $('#felt');
+  f.innerHTML = '';
+  var myRow = null;
+  [1, 2, 3, 0].forEach(function (seat) {
+    var row = seatRow(seat);
+    if (seat === HKG.HUMAN) myRow = row;
+    f.appendChild(row);
+  });
+  var rack = document.createElement('div');
+  rack.className = 'my-rack';
+  var mine = g.seats[HKG.HUMAN], over = g.phase === 'over';
+  var myTurn = g.phase === 'discard' && g.turn === HKG.HUMAN && !g.offer;
+  var counts = mine.counts.slice(), drawn = g.drawn;
+  if (drawn !== null && drawn !== undefined && counts[drawn] > 0 && (myTurn || over)) counts[drawn]--;
+  E.countsToTiles(counts).forEach(function (t) {
+    rack.appendChild(tileEl(t, '', myTurn ? function () { play(t); } : null, !myTurn));
+  });
+  if (drawn !== null && drawn !== undefined && (myTurn || over) && mine.counts[drawn] > 0) {
+    var gap = document.createElement('span');
+    gap.className = 'gap';
+    rack.appendChild(gap);
+    var el = tileEl(drawn, 'drawn', myTurn ? function () { play(drawn); } : null, !myTurn);
+    rack.appendChild(el);
+  }
+  myRow.appendChild(rack);
+  $('#roundLbl').textContent = HKG.WIND[g.round] + ' round · you are ' + seatLabel(HKG.HUMAN);
+  $('#wallLbl').textContent = g.wall.length + ' in the wall';
+}
+
+function renderLog() {
+  var host = $('#gameLog');
+  host.innerHTML = '';
+  g.log.slice(-7).forEach(function (l) {
+    var d = document.createElement('div');
+    d.innerHTML = l.seat === HKG.HUMAN ? '<b>' + l.text + '</b>' : l.text;
+    host.appendChild(d);
+  });
+  host.scrollTop = host.scrollHeight;
+}
+
+/* ---- what you can do right now ---- */
+var CLAIM_CN = { win: '食糊', pung: '碰', kong: '槓', chow: '上', concealedKong: '暗槓' };
+function actionBtn(label, cn, cls, fn) {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn ' + (cls || '');
+  b.innerHTML = '<span class="cjk">' + cn + '</span>' + label;
+  b.addEventListener('click', fn);
+  return b;
+}
+function renderActions() {
+  var host = $('#actions');
+  host.innerHTML = '';
+  if (g.phase === 'over') {
+    var r = g.result, note = document.createElement('span');
+    note.className = 'hint';
+    note.textContent = r.seat === null ? '流局 — the wall ran out, nobody wins.'
+      : (r.seat === HKG.HUMAN ? 'You won' : HKG.WIND[HKG.seatWind(g, r.seat)] + ' won') +
+        ' with ' + r.score.faan + ' faan' + (r.how === 'selfDraw' ? ' on a self-draw.' : ' on a discard.');
+    host.appendChild(note);
+    return;
+  }
+  if (g.offer) {
+    g.offer.claims.forEach(function (c) {
+      host.appendChild(actionBtn(c.kind === 'win' ? 'Win' : c.kind.charAt(0).toUpperCase() + c.kind.slice(1),
+        CLAIM_CN[c.kind], c.kind === 'win' ? 'go' : '', function () { HKG.humanTake(g, c); afterMove(); }));
+    });
+    host.appendChild(actionBtn('Pass', '過', 'ghost', function () { HKG.humanPass(g); afterMove(); }));
+    return;
+  }
+  if (g.phase === 'discard' && g.turn === HKG.HUMAN) {
+    (g.selfKongs || []).forEach(function (k) {
+      host.appendChild(actionBtn('Kong ' + E.tileName(k.tile), '暗槓', 'ghost', function () {
+        HKG.humanConcealedKong(g, k.tile); afterMove();
+      }));
+    });
+    var h = document.createElement('span');
+    h.className = 'hint';
+    h.textContent = 'Your turn — tap a tile to throw it.';
+    host.appendChild(h);
+    return;
+  }
+  var w = document.createElement('span');
+  w.className = 'hint dots';
+  w.textContent = HKG.WIND[HKG.seatWind(g, g.turn)] + ' is thinking';
+  host.appendChild(w);
+}
+
+/* ---- the coach's live reading ---- */
+function panel(en, eyebrow) {
+  var p = document.createElement('div');
+  p.className = 'panel';
+  p.innerHTML = '<h3>' + en + '</h3><span class="eyebrow">' + eyebrow + '</span>';
+  return p;
+}
+function tableEl(headers, rows) {
+  var box = document.createElement('div');
+  box.className = 'scroll';
+  var t = document.createElement('table');
+  t.innerHTML = '<thead><tr>' + headers.map(function (h) {
+    return '<th' + (h[1] ? ' class="num"' : '') + '>' + h[0] + '</th>';
+  }).join('') + '</tr></thead>';
+  var body = document.createElement('tbody');
+  rows.forEach(function (r) {
+    var tr = document.createElement('tr');
+    if (r.cls) tr.className = r.cls;
+    r.cells.forEach(function (cell, i) {
+      var td = document.createElement('td');
+      if (headers[i] && headers[i][1]) td.className = 'num';
+      if (cell instanceof Node) td.appendChild(cell); else td.innerHTML = cell;
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+  t.appendChild(body);
+  box.appendChild(t);
+  return box;
+}
+function tileCell(i) {
+  var d = document.createElement('div');
+  d.className = 'tilerow';
+  d.appendChild(tileEl(i, 'xs'));
+  var s = document.createElement('span');
+  s.className = 'cjk-cell';
+  s.textContent = E.tileName(i);
+  d.appendChild(s);
+  return d;
+}
+function tileStrip(list, limit) {
+  var row = document.createElement('div');
+  row.className = 'tilerow';
+  list.slice(0, limit).forEach(function (t) { row.appendChild(tileEl(t.tile, 'xs')); });
+  if (list.length > limit) {
+    var more = document.createElement('span');
+    more.className = 'eyebrow';
+    more.textContent = '+' + (list.length - limit);
+    row.appendChild(more);
+  }
+  return row;
+}
+function riskCell(tile) {
+  var r = HKG.risk(g, HKG.HUMAN, tile), s = document.createElement('span');
+  s.className = 'risk r-' + r.word;
+  s.textContent = r.word;
+  if (r.why) s.title = r.why;
+  return s;
+}
+/* who on this table is worth being careful of */
+function threatLine() {
+  var worst = null;
+  [1, 2, 3].forEach(function (s) {
+    var t = HKG.threat(g, s);
+    if (!worst || t > worst.t) worst = { seat: s, t: t };
+  });
+  if (!worst || worst.t < 0.3) return null;
+  var s = g.seats[worst.seat], bits = [], fs = HKG.flushSuit(g, worst.seat);
+  if (s.melds.length) bits.push('<b>' + s.melds.length + '</b> set' + (s.melds.length > 1 ? 's' : '') + ' down');
+  if (fs !== null) bits.push('has thrown no <b>' + E.SUIT_CH[fs] + '</b> in ' + s.discards.length);
+  if (!bits.length) bits.push('is deep into the hand');
+  var d = document.createElement('div');
+  d.className = 'threat';
+  d.innerHTML = '<b>' + HKG.WIND[HKG.seatWind(g, worst.seat)] + '</b> ' + bits.join(' and ') +
+    '. Risk below is measured against them.';
+  return d;
+}
+
+function faanName(k) { return E.FAAN[k][0]; }
+function faanEn(k) { return E.FAAN[k][1]; }
+
+function scorePanel(sc, who) {
+  var p = panel(who, 'What it pays');
+  p.appendChild(tableEl([['Pattern', 0], ['', 0], ['Faan', 1]], sc.patterns.map(function (x) {
+    return { cells: ['<span class="cjk-cell">' + faanName(x.key) + '</span>',
+      '<span style="color:var(--ink-soft)">' + faanEn(x.key) + '</span>',
+      '<span class="faan-n">' + (x.faan ? '+' + x.faan : '0') + '</span>'] };
+  })));
+  var tot = document.createElement('div');
+  tot.className = 'total';
+  tot.innerHTML = '<span>Total</span><span class="n">' + sc.faan + ' <span class="cjk">番</span></span>';
+  p.appendChild(tot);
+  var pay = document.createElement('div');
+  pay.className = 'payout';
+  pay.innerHTML = (sc.raw > E.LIMIT ? '<b>' + sc.raw + ' faan raw</b>, paid at the ' + E.LIMIT + '-faan limit. ' : '') +
+    'Worth <b>' + sc.units + ' units</b>. 自摸: all three pay ' + sc.units + '. 出銃: the discarder pays ' +
+    sc.units + ' under 半銃, or ' + (sc.units * 3) + ' under 全銃.';
+  p.appendChild(pay);
+  return p;
+}
+
+function renderReadout() {
+  var host = $('#readout');
+  host.innerHTML = '';
+  var me = g.seats[HKG.HUMAN], ctx = HKG.ctxFor(g, HKG.HUMAN);
+  if (g.phase === 'over') {
+    if (g.result.seat !== null) host.appendChild(scorePanel(g.result.score,
+      g.result.seat === HKG.HUMAN ? 'Your hand' : HKG.WIND[HKG.seatWind(g, g.result.seat)] + "'s hand"));
+    return;
+  }
+  var full = HKG.handSize(me), n = E.total(me.counts);
+  var p1 = panel('Where you stand', 'Your hand');
+  var big = document.createElement('div');
+  big.className = 'big';
+  if (n === full) {
+    var ds = E.discards(me.counts, ctx), b = ds[0];
+    big.innerHTML = (b.shanten === 0 ? '聽牌' : b.shanten + ' away') +
+      '<small>' + (b.shanten === 0 ? 'one discard from tenpai' : 'after your best discard') + '</small>';
+    p1.appendChild(big);
+    var note = document.createElement('p');
+    note.innerHTML = 'Throw <b>' + E.tileName(b.tile) + '</b> and you accept <b>' + b.live +
+      '</b> live tiles' + (b.shanten === 0 ? ', waiting on <b>' +
+        b.waits.filter(function (w) { return w.winning; }).map(function (w) { return E.tileName(w.tile); })
+          .join('</b> or <b>') + '</b>.' : '.');
+    p1.appendChild(note);
+    var tl = threatLine();
+    if (tl) p1.appendChild(tl);
+    host.appendChild(p1);
+    var p2 = panel('Discard ranking', 'Your move');
+    p2.appendChild(tableEl([['Throw', 0], ['Leaves you', 0], ['Live', 1], ['Risk', 0], ['Accepting', 0]],
+      ds.slice(0, 5).map(function (d) {
+        return { cls: d.shanten === b.shanten && d.live === b.live ? 'best' : '',
+          cells: [tileCell(d.tile),
+            d.shanten === 0 ? '聽牌 tenpai' : d.shanten + ' away',
+            String(d.live), riskCell(d.tile), tileStrip(d.waits, 5)] };
+      })));
+    host.appendChild(p2);
+    return;
+  }
+  var u = E.ukeire(me.counts, ctx);
+  big.innerHTML = (u.shanten === 0 ? '聽牌' : u.shanten + ' away') +
+    '<small>' + (u.shanten === 0 ? 'one tile from a win' : 'from tenpai') + '</small>';
+  p1.appendChild(big);
+  var np = document.createElement('p');
+  np.innerHTML = '<b>' + u.tiles.length + '</b> tiles help you, <b>' + u.live + '</b> of them still live.';
+  p1.appendChild(np);
+  host.appendChild(p1);
+  var p3 = panel(u.shanten === 0 ? 'Your waits' : 'What helps',
+    u.shanten === 0 ? 'Tenpai' : u.shanten + ' away');
+  if (u.shanten === 0) {
+    p3.appendChild(tableEl([['Winning tile', 0], ['Left', 1], ['Faan', 1], ['Scores as', 0]],
+      u.tiles.filter(function (t) { return t.winning; }).map(function (t) {
+        return { cells: [tileCell(t.tile), String(t.live), '<span class="faan-n">' + t.faan + '</span>',
+          '<span class="cjk-cell">' + t.patterns.map(function (x) { return faanName(x.key); }).join('、') + '</span>'] };
+      })));
+  } else {
+    p3.appendChild(tileStrip(u.tiles, 16));
+  }
+  host.appendChild(p3);
+}
+
+function renderFaanRef() {
+  var host = $('#faanRef');
+  if (!host) return;
+  host.innerHTML = Object.keys(E.FAAN).sort(function (a, b) { return E.FAAN[a][2] - E.FAAN[b][2]; })
+    .map(function (k) {
+      var r = E.FAAN[k];
+      return '<div class="row"><span class="nm">' + r[0] + '<span>' + r[1] + '</span></span>' +
+        '<span class="v">' + (r[2] ? r[2] + ' faan' : '—') + '</span></div>';
+    }).join('');
+}
+
+/* ---- driving the hand ---- */
+function paint() { renderTable(); renderActions(); renderReadout(); renderLog(); renderPrompts(); }
+
+function tick() {
+  clearTimeout(timer);
+  var r = HKG.step(g);
+  paint();
+  if (!r || r.wait) return;
+  timer = setTimeout(tick, 620);
+}
+function afterMove() { paint(); timer = setTimeout(tick, 320); }
+function play(tile) {
+  if (!HKG.humanDiscard(g, tile)) return;
+  afterMove();
+}
+function newHand() {
+  clearTimeout(timer);
+  g = HKG.newGame({});
+  chat = [];
+  paint();
+  timer = setTimeout(tick, 400);
+}
+
+/* ---- the coach, handed the live table ---- */
+function handState() {
+  var me = g.seats[HKG.HUMAN], ctx = HKG.ctxFor(g, HKG.HUMAN), L = [];
+  L.push('Seat ' + HKG.WIND[HKG.seatWind(g, HKG.HUMAN)] + ' · round ' + HKG.WIND[g.round] +
+    ' · ' + g.wall.length + ' tiles left in the wall');
+  L.push('Your rack: ' + (E.formatHand(me.counts, []) || 'empty'));
+  if (me.melds.length) {
+    L.push('Laid down: ' + me.melds.map(function (m) {
+      return (m.concealed ? 'concealed ' : 'exposed ') + m.type + ' of ' + E.tileName(m.tile);
+    }).join(', ') + ' (so the hand is ' + (ctx.concealed ? 'still 門前清' : 'no longer 門前清') + ')');
+  }
+  [1, 2, 3].forEach(function (s) {
+    var o = g.seats[s], fs = HKG.flushSuit(g, s);
+    L.push(HKG.WIND[HKG.seatWind(g, s)] + ' threat ' + HKG.threat(g, s).toFixed(2) +
+      (fs !== null ? ' (reads as a ' + E.SUIT_CH[fs] + ' flush chase)' : ''));
+    L.push(HKG.WIND[HKG.seatWind(g, s)] + ' has thrown: ' +
+      (o.discards.map(E.tileName).join(' ') || 'nothing yet') +
+      (o.melds.length ? ' · laid down ' + o.melds.map(function (m) {
+        return m.type + ' of ' + E.tileName(m.tile); }).join(', ') : ''));
+  });
+  if (g.phase === 'over') {
+    var r = g.result;
+    L.push(r.seat === null ? 'The hand was a draw.' :
+      (r.seat === HKG.HUMAN ? 'You won' : HKG.WIND[HKG.seatWind(g, r.seat)] + ' won') + ' with ' +
+      r.score.faan + ' faan: ' + r.score.patterns.map(function (p) {
+        return faanName(p.key) + ' ' + faanEn(p.key) + ' +' + p.faan; }).join('; '));
+    return L.join('\n');
+  }
+  var full = HKG.handSize(me), n = E.total(me.counts);
+  if (n === full) {
+    var ds = E.discards(me.counts, ctx);
+    L.push('It is your turn. Discards, best first (shanten = tiles from tenpai, live = copies left that help,');
+    L.push('risk = how likely that throw feeds an opponent, judged only from what is face-up):');
+    ds.slice(0, 6).forEach(function (d) {
+      var rk = HKG.risk(g, HKG.HUMAN, d.tile);
+      L.push('  throw ' + E.tileName(d.tile) + ' -> ' + d.shanten + ' shanten, ' + d.live + ' live, risk ' +
+        rk.word + ' (' + rk.score.toFixed(2) + (rk.why ? ', vs ' + rk.why : '') + '), accepts ' +
+        d.waits.map(function (w) { return E.tileName(w.tile) + (w.winning ? '(wins ' + w.faan + ' faan)' : ''); }).join(' '));
+    });
+  } else {
+    var u = E.ukeire(me.counts, ctx);
+    L.push(u.shanten === 0 ? 'You are TENPAI. Winning tiles:' : u.shanten + ' shanten. Tiles that help:');
+    u.tiles.forEach(function (t) {
+      L.push('  ' + E.tileName(t.tile) + ' — ' + t.live + ' left' + (t.winning ?
+        ', wins for ' + t.faan + ' faan (' + t.patterns.map(function (p) { return faanName(p.key); }).join('、') + ')' : ''));
+    });
+  }
+  if (g.offer) {
+    L.push('You are being offered: ' + g.offer.claims.map(function (c) {
+      return CLAIM_CN[c.kind] + ' ' + c.kind + (c.tile !== null && c.tile !== undefined ? ' on ' + E.tileName(c.tile) : '');
+    }).join(', '));
+  }
+  return L.join('\n');
+}
+
+var COACH_RULES = [
+  'You are a Hong Kong mahjong coach (廣東麻雀, HK old style, 13-faan limit) sitting behind a beginner',
+  'while they play a hand. A deterministic engine has already analysed the table. The numbers under',
+  'TABLE are correct: never recompute, contradict or invent faan values, shanten counts or tile counts.',
+  'Be concrete and short — under 130 words unless asked for more. Name tiles as the engine does (3筒, 中, 東).',
+  'Name a pattern in Chinese with the English in brackets the first time it comes up.',
+  'Say what you would do and what it costs. Plain prose, short paragraphs; a dash list only when',
+  'comparing options. No headings. Reply in the language the player wrote in.'
+].join(' ');
+
+function inlineFmt(s) { return s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'); }
+function fmt(text) {
+  var esc = String(text).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; });
+  return esc.split(/\n{2,}/).map(function (block) {
+    var lines = block.split('\n').filter(function (l) { return l.trim(); });
+    if (!lines.length) return '';
+    if (lines.every(function (l) { return /^\s*[-•*]\s+/.test(l); })) {
+      return '<ul>' + lines.map(function (l) { return '<li>' + inlineFmt(l.replace(/^\s*[-•*]\s+/, '')) + '</li>'; }).join('') + '</ul>';
+    }
+    return '<p>' + inlineFmt(lines.join('<br>')) + '</p>';
+  }).join('');
+}
+function bubble(role, html) {
+  var d = document.createElement('div');
+  d.className = 'msg ' + (role === 'user' ? 'you' : 'coach');
+  d.innerHTML = role === 'user' ? '' : '<div class="who">Coach</div>';
+  var body = document.createElement('div');
+  body.innerHTML = html;
+  d.appendChild(body);
+  $('#thread').appendChild(d);
+  $('#thread').scrollTop = $('#thread').scrollHeight;
+  return body;
+}
+function renderPrompts() {
+  var host = $('#prompts');
+  if (host.hidden || !g) return;
+  var me = g.seats[HKG.HUMAN], list;
+  if (g.phase === 'over') list = ['Explain that faan count simply.', 'What should I have done differently?'];
+  else if (g.offer) list = ['Should I take it?', '點解唔好碰？', 'What does claiming cost me?'];
+  else if (E.total(me.counts) === HKG.handSize(me)) list = ['打邊隻好？點解？', 'Is a flush worth chasing here?', 'Which throw is dangerous?'];
+  else list = ['What am I waiting for?', 'What are the others collecting?', 'How do I read the discards?'];
+  host.innerHTML = '';
+  list.forEach(function (q) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = q;
+    b.addEventListener('click', function () { ask(q); });
+    host.appendChild(b);
+  });
+}
+function ask(question) {
+  if (asking || !sampler || !question.trim()) return;
+  asking = true;
+  $('#askBtn').disabled = true;
+  $('#askInput').value = '';
+  bubble('user', fmt(question));
+  var body = bubble('coach', '<p class="dots">Reading the table</p>');
+  var turns = chat.slice(-6);
+  turns.push({ role: 'user', content: COACH_RULES + '\n\n[TABLE]\n' + handState() + '\n\n[QUESTION]\n' + question });
+  sampler(turns, { cache: false, modelTier: 'default', onText: function (ev) {
+    body.innerHTML = fmt(ev.text);
+    $('#thread').scrollTop = $('#thread').scrollHeight;
+  } }).then(function (res) {
+    body.innerHTML = fmt(res.text);
+    chat.push({ role: 'user', content: question });
+    chat.push({ role: 'assistant', content: res.text });
+  }).catch(function (err) {
+    body.innerHTML = fmt(err && err.code === 'rate_limited'
+      ? 'Too many questions at once — give it a moment and ask again.'
+      : 'The coach could not answer that one. The counting on the table still holds.');
+  }).then(function () { asking = false; $('#askBtn').disabled = false; });
+}
+function coachUnavailable() {
+  $('#askRow').hidden = true;
+  $('#thread').hidden = true;
+  $('#prompts').hidden = true;
+  $('#prompts').innerHTML = '';
+  $('#coachOffline').hidden = false;
+  $('#coachOffline').textContent = 'The chat coach is not available in this view. The table and its ' +
+    'counting are computed on this page and still work.';
+}
+
+/* ---- the dragon's swim ----
+   A serpent, not a koi. The koi model had no path at all: a head wandered and the body was
+   the record of where it had been, which let the spine turn back on itself -- and the frame
+   it did, the drawing was belly-up, because the renderer maps the sprite's belly-ward axis
+   to one side of the direction of travel. So the spine is a function now. Height is read
+   off distance behind the head and x is solved from it, falling at every joint; a body that
+   cannot double back cannot turn over.
+   Two motions are layered on that axis. The head wanders slowly over the stage, and each
+   station behind it replays the head's height from LAG_S * (its share of the body) ago, so
+   a rise at the head rolls down the length -- the head leads and the body follows it. Over
+   that runs the undulation, ramped from almost nothing at the head to its full swing by the
+   tail, travelling backwards the way a swimming animal's does. */
+function mountDragonSwim(hero, {
+  imageUrl = 'dragon.webp',
+  onState = () => {},
+} = {}) {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'dragon-swim';
+  canvas.setAttribute('aria-hidden', 'true');
+  /* A mesh, not a stack of blitted strips. The body is one triangle strip whose vertices
+     ride the spine, so the artwork is sampled once per pixel however hard the body bends --
+     no overdraw, no seams to hide, and the whole thing is one draw call a frame. */
+  const gl = canvas.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: true })
+    || canvas.getContext('experimental-webgl', { alpha: true, antialias: true, premultipliedAlpha: true });
+  if (!gl) return () => {};
+
+  const VERT = `
+    attribute vec2 a_pos;
+    attribute vec2 a_uv;
+    uniform vec2 u_res;
+    varying vec2 v_uv;
+    void main() {
+      vec2 c = a_pos / u_res * 2.0 - 1.0;
+      gl_Position = vec4(c.x, -c.y, 0.0, 1.0);
+      v_uv = a_uv;
+    }`;
+  const FRAG = `
+    precision mediump float;
+    uniform sampler2D u_tex;
+    uniform float u_alpha;
+    varying vec2 v_uv;
+    void main() {
+      gl_FragColor = texture2D(u_tex, v_uv) * u_alpha;
+    }`;
+
+  function compile(type, src) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { gl.deleteShader(sh); return null; }
+    return sh;
+  }
+  const vs = compile(gl.VERTEX_SHADER, VERT), fs = compile(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) return () => {};
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return () => {};
+  gl.useProgram(prog);
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  const aUv = gl.getAttribLocation(prog, 'a_uv');
+  const uRes = gl.getUniformLocation(prog, 'u_res');
+  const uAlpha = gl.getUniformLocation(prog, 'u_alpha');
+  /* The texture is uploaded with its alpha already multiplied in, so a half-transparent
+     edge pixel carries half its colour and the scales never fringe against the red. */
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  gl.clearColor(0, 0, 0, 0);
+
+  const image = new Image();
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  /* The artwork runs head-right along a horizontal axis. The mesh reads it directly:
+     across the body is the image's height, along the body its width, head at u = 1. */
+  let texture = null, spriteW = 0, spriteH = 0;
+  function buildTexture() {
+    const W = image.naturalWidth, H = image.naturalHeight;
+    if (!W || !H) return false;
+    spriteH = W;   /* along the body */
+    spriteW = H;   /* across it */
+    texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    return true;
+  }
+
+  const N = 73;
+  /* The wave, in fractions of the body: how far the spine swings off its axis, how many
+     crests lie along it, how fast it beats, and how much of the swing the head itself
+     takes. AMP * 2pi * WAVES is the steepest the spine can get and has to stay below 1 --
+     at 1 a joint would have to rise its own length and the body would stand on end. */
+  const AMP = .092, WAVES = 1.25, OMEGA = 1.2, HEAD_AMP = .22;
+  /* What the reference drawings have in common, and the plain wave did not: the head is
+     carried clear of the body on a neck that is nearly straight, the swing builds up
+     behind that neck rather than being shared equally along the body, and the last of the
+     tail lifts and flares. LIFT and TAIL are shares of a body length; NECK is how far
+     back along the body the head's carriage has died away to nothing. */
+  const NECK = .26, LIFT = .06, TAIL = .03;
+  /* Coming about, it gathers itself rather than being squeezed flat: the head rears by
+     REAR of a body length and the body takes a curve CURL deeper than its cruising one,
+     which is the shape the turning poses are drawn in. The deeper curve is carried by
+     the middle of the body, not the front -- stacked on the neck's own rise it is more
+     than a joint can take, and the body bunches instead of bending. */
+  const REAR = .085, CURL = .45;
+  /* Seconds for a movement of the head to reach the tail, and the share of a segment's
+     length that movement is allowed to spend on rising. The lag is in seconds, so a
+     slower dragon needs a longer one to put the same length of body through the bend. */
+  const LAG_S = 1.35, CLIMB = .34;
+  /* How far the drawing reaches from the spine, as a fraction of the sprite's width. It is
+     measured off the artwork's own alpha, which fills only .15 to .82 of the box it sits in. */
+  const INK = .36;
+  /* Cruising speed in body lengths a second, how long a turn takes, and how thin the body
+     is allowed to get at the moment it is edge-on to you. */
+  const CRUISE = .13, TURN_S = 2.1, MIN_SQUASH = .13;
+
+  const pts = [];
+  for (let i = 0; i < N; i++) pts.push({ x: 0, y: 0 });
+  /* The head's height, held back in STAGES steps: each one chases the one in front with a
+     time constant of LAG_S/STAGES, so stage k is the head as it was k of those ago and the
+     last is a whole LAG_S behind. The body is then drawn through those past heights, which
+     is what makes the head lead and every stretch of body arrive where the head has been. */
+  const STAGES = 8;
+  const lagY = new Float64Array(STAGES + 1);
+
+  /* one vertex pair per station: the strip runs head to tail, top edge and bottom edge */
+  const verts = new Float32Array(N * 4);
+  const uvs = new Float32Array(N * 4);
+  for (let i = 0; i < N; i++) {
+    const u = 1 - i / (N - 1);
+    uvs[i * 4] = u; uvs[i * 4 + 1] = 0;
+    uvs[i * 4 + 2] = u; uvs[i * 4 + 3] = 1;
+  }
+  const posBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, verts, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+  const uvBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(aUv);
+  gl.vertexAttribPointer(aUv, 2, gl.FLOAT, false, 0, 0);
+
+  let raf, scale, segLen, last, maxBend, cssW = 0, cssH = 0;
+  let hx = 0, hy = 0, wantY = 0, wanderT = 0, phase = 0, seeded = false;
+  /* squash is the body seen end-on: +1 is broadside facing right, -1 broadside facing left,
+     and the way through zero is the dragon turning its length away from you. */
+  let dir = -1, squash = -1, turning = false, turnT = 0, turnFrom = -1, gather = 0;
+  let disposed = false;
+  const observer = new ResizeObserver(resize);
+  hero.append(canvas);
+  observer.observe(hero);
+
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+  const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+
+  /* Where the head may go. Top and bottom keep the drawing's reach off the spine, plus the
+     swing of the wave, clear of the edge. Sideways the head turns well inside the frame, so
+     the turn itself is on stage and only the thin end of the tail ever leaves it. */
+  function bounds(w, h) {
+    const L = spriteH * scale;
+    const half = spriteW * INK * scale + AMP * L + Math.max(LIFT, TAIL) * L;
+    const swing = Math.min(Math.max(0, h / 2 - half), L * .7);
+    return { xLo: w * .27, xHi: w * .73, yLo: h / 2 - swing, yHi: h / 2 + swing };
+  }
+
+  function seed(w, h) {
+    const b = bounds(w, h);
+    hx = (b.xLo + b.xHi) / 2;
+    hy = wantY = (b.yLo + b.yHi) / 2;
+    wanderT = rnd(1, 3);
+    lagY.fill(hy);
+    seeded = true;
+  }
+
+  function resize() {
+    cssW = hero.clientWidth;
+    cssH = hero.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (!spriteH) return;
+    /* The body lies across the stage, so its length is bounded by the width and its
+       thickness by the height. */
+    scale = Math.min(cssH * .78 / spriteH, cssW * .42 / spriteW);
+    segLen = spriteH * scale / (N - 1);
+    /* The tightest turn a joint may take. A ribbon bent to a radius under its own half
+       width folds through itself on the inside, and what comes out is the body smearing
+       rather than bending. INK * spriteW is how far the drawing reaches from the spine. */
+    maxBend = (spriteH / (N - 1)) / (INK * spriteW * 1.3);
+    if (!seeded) seed(cssW, cssH);
+  }
+
+  /* the head's height as it was `u` of the way back through LAG_S */
+  function trail(u) {
+    const f = u * STAGES, j = Math.min(STAGES - 1, Math.floor(f));
+    return lagY[j] + (lagY[j + 1] - lagY[j]) * (f - j);
+  }
+
+  function step(dt, w, h) {
+    const b = bounds(w, h);
+    const L = spriteH * scale;
+
+    /* up and down: a new height to make for every few seconds, reached at a rate the body
+       can actually pass backwards -- climb faster than that and the spine would have to
+       stand on end to keep hold of the head's path. */
+    wanderT -= dt;
+    if (wanderT <= 0) { wantY = rnd(b.yLo, b.yHi); wanderT = rnd(2.6, 5.5); }
+    const e = 1 - Math.exp(-dt * .5);
+    const vy = L * CLIMB / LAG_S * dt;
+    if (vy > 0) hy += vy * Math.tanh((clamp(wantY, b.yLo, b.yHi) - hy) * e / vy);
+
+    /* Along: cruise, then roll over and come back. The turn is a yaw -- the body
+       foreshortens to nothing and opens out the other way, the way a fish turns at the
+       glass, rather than the drawing flipping on the spot.
+       It rolls into it rather than arriving at it. The same cosine that swings the body
+       round also scales the speed along, so the dragon runs down to a standstill as it
+       comes side-on and gathers way again out of it, with no step in the speed at either
+       end. That costs it a length of run, so the turn is called early by exactly the
+       distance it takes to stop -- the integral of the cosine over half a turn. */
+    const speed = CRUISE * L, brake = speed * TURN_S / Math.PI;
+    if (!turning) {
+      hx += dir * speed * dt;
+      if ((dir > 0 && hx >= b.xHi - brake) || (dir < 0 && hx <= b.xLo + brake)) {
+        turning = true; turnT = 0; turnFrom = dir;
+      }
+    } else {
+      turnT += dt;
+      const t = Math.min(turnT / TURN_S, 1);
+      const c = Math.cos(t * Math.PI);
+      squash = turnFrom * (Math.abs(c) < MIN_SQUASH ? (c < 0 ? -1 : 1) * MIN_SQUASH : c);
+      dir = squash < 0 ? -1 : 1;
+      hx += dir * speed * dt * Math.abs(c);
+      /* The gathering follows how broadside the body still is, not how far through
+         the turn it is: deepening the curve hardest at the moment the body is
+         edge-on would fold it into a concertina, where there is least room for it
+         and least of it to see. So it curves into the turn, runs straight through
+         the edge-on moment, and curves out of it. */
+      gather = Math.min(1, 2 * Math.sin(t * Math.PI) * Math.abs(c));
+      if (t >= 1) { turning = false; squash = -turnFrom; dir = squash; gather = 0; }
+    }
+    hx = clamp(hx, b.xLo - L * .05, b.xHi + L * .05);
+
+    lagY[0] = hy;
+    const k = 1 - Math.exp(-dt * STAGES / LAG_S);
+    for (let i = 1; i <= STAGES; i++) lagY[i] += (lagY[i - 1] - lagY[i]) * k;
+    phase += dt * OMEGA;
+
+    /* The spine, laid out head first in its own frame: the body always trails off in -x
+       from the head, and the screen is given the mirror of it when the dragon faces left.
+       x is what is left of a segment once the rise is taken out of it, so every joint is
+       exactly one segment long however hard the body is bending -- which is what stops it
+       ever doubling back on itself and spreading out. */
+    const amp = AMP * L, K = 2 * Math.PI * WAVES;
+    const lift = LIFT * L, flare = TAIL * L;
+    let x = hx, prevY = 0;
+    for (let i = 0; i < N; i++) {
+      const u = i / (N - 1);
+      /* the swing is slight at the head and full by the middle, rather than growing
+         evenly all the way down -- which is what makes the head lead and not wag */
+      const swing = HEAD_AMP + (1 - HEAD_AMP) * Math.pow(u, .75);
+      /* the neck, raised at the head and level again a quarter of the way back */
+      const neck = u < NECK ? lift * .5 * (1 + Math.cos(Math.PI * u / NECK)) : 0;
+      /* and the flare of the tail over the last fifth */
+      const tip = u > .8 ? flare * .5 * (1 - Math.cos(Math.PI * (u - .8) / .2)) : 0;
+      /* and, mid-turn, the rear of the head and the deeper curve through the front */
+      const rear = gather * REAR * L * (u < .55 ? .5 * (1 + Math.cos(Math.PI * u / .55)) : 0);
+      const deep = 1 + gather * CURL * Math.sin(Math.PI * clamp((u - NECK) / .54, 0, 1));
+      const y = trail(u) + amp * swing * deep * Math.sin(phase - u * K) - neck - tip - rear;
+      if (i) {
+        const dy = y - prevY;
+        x -= Math.sqrt(Math.max(segLen * segLen - dy * dy, 0));
+      }
+      pts[i].x = x; pts[i].y = y;
+      prevY = y;
+    }
+    /* Hold every joint inside that turn. The wave on its own stays within it; this bites
+       only where the head's swing and its climb stack on top of the wave, and rounds those
+       moments off instead of letting the body fold through itself. */
+    let ang = Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
+    for (let i = 1; i < N - 1; i++) {
+      const want = Math.atan2(pts[i + 1].y - pts[i].y, pts[i + 1].x - pts[i].x);
+      ang += clamp(wrap(want - ang), -maxBend, maxBend);
+      pts[i + 1].x = pts[i].x + Math.cos(ang) * segLen;
+      pts[i + 1].y = pts[i].y + Math.sin(ang) * segLen;
+    }
+  }
+
+  /* The spine becomes a ribbon: at each station a normal to the body, and a vertex out to
+     either edge of the artwork. The spine sits at .49 of the drawing's thickness, which is
+     where the backbone falls in the art. */
+  function build() {
+    const side = squash < 0 ? -1 : 1;
+    /* Turning away shortens what you see of the body along its length. It does not
+       shorten it up and down -- that is square to the axis it is turning about -- and
+       halving the wave there was what made the turn read as a squeeze. */
+    const across = spriteW * scale;
+    const top = -.49 * across * side, bot = .51 * across * side;
+    let px = 0, py = 0;
+    for (let i = 0; i < N; i++) {
+      const X = hx + squash * (pts[i].x - hx);
+      const Y = pts[i].y;
+      if (i) {
+        let dx = X - px, dy = Y - py;
+        const len = Math.hypot(dx, dy) || 1;
+        dx /= len; dy /= len;
+        /* the station behind takes the direction it was reached by */
+        verts[(i - 1) * 4] = px + dy * top; verts[(i - 1) * 4 + 1] = py - dx * top;
+        verts[(i - 1) * 4 + 2] = px + dy * bot; verts[(i - 1) * 4 + 3] = py - dx * bot;
+        if (i === N - 1) {
+          verts[i * 4] = X + dy * top; verts[i * 4 + 1] = Y - dx * top;
+          verts[i * 4 + 2] = X + dy * bot; verts[i * 4 + 3] = Y - dx * bot;
+        }
+      }
+      px = X; py = Y;
+    }
+  }
+
+  function frame(now) {
+    const w = hero.clientWidth, h = hero.clientHeight;
+    if (w !== cssW || h !== cssH) resize();
+    const dt = clamp((now - (last ?? now)) / 1000, 0, .05);
+    last = now;
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    if (texture && scale > 0) {
+      step(dt, w, h);
+      build();
+      gl.useProgram(prog);
+      gl.uniform2f(uRes, w, h);
+      gl.uniform1f(uAlpha, 1);
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, verts);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+      gl.vertexAttribPointer(aUv, 2, gl.FLOAT, false, 0, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, N * 2);
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  function syncMotion() {
+    cancelAnimationFrame(raf);
+    last = undefined;
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    if (reduced.matches || !image.naturalWidth || disposed) { onState(false); return; }
+    if (!texture && !buildTexture()) { onState(false); return; }
+    resize();
+    onState(true);
+    raf = requestAnimationFrame(frame);
+  }
+
+  reduced.addEventListener('change', syncMotion);
+  image.onload = syncMotion;
+  image.src = imageUrl;
+  return () => {
+    disposed = true;
+    cancelAnimationFrame(raf);
+    observer.disconnect();
+    reduced.removeEventListener('change', syncMotion);
+    image.onload = null;
+    canvas.remove();
+    onState(false);
+  };
+}
+
+/* ---- boot ---- */
+function boot(saved) {
+  renderWord('#wordA', 'MAHJONG', 0);
+  renderWord('#wordB', 'GPT', 7);
+  /* The dragon waits for the title: one source of truth for when that is, so changing
+     the wordmark cannot leave it coming in over the letters. */
+  var letters = 'MAHJONG'.length + 'GPT'.length;
+  document.documentElement.style.setProperty('--after-title',
+    (RISE_FROM + (letters - 1) * RISE_STEP + RISE_DUR).toFixed(3) + 's');
+  $('#menuBtn').addEventListener('click', function () { setMenu($('#menu').hidden); });
+  $('#menu').addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (!a) return;
+    e.preventDefault();
+    setMenu(false);
+    var href = a.getAttribute('href');
+    /* Play is the game and Ask Mahjong GPT is the coach, each a page of its own next to
+       this one, with its own way back here. The blank page is now only ever the fallback
+       for a link with nowhere to go. */
+    if (href === '#play') { location.href = 'play/index.html'; return; }
+    if (href === '#instructions') { location.href = 'play/index.html#instructions'; return; }
+    if (href === '#gpt') { location.href = 'play/index.html#gpt'; return; }
+    $('#blankPage').hidden = href === '#home';
+    if (href !== '#home') return;
+    /* the target may not be on the page; closing the menu is then the whole action */
+    var el = document.querySelector(href);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    setMenu(false);
+    $('#blankPage').hidden = true;
+  });
+
+  /* The dragon swims across the hero. The flat-sprite version that used to live here is
+     the commented-out markup and the mountDragonSwim above it; the swim is now a three.js
+     mesh deformed along a spine, which arrives as a module and so is mounted at the foot
+     of this file rather than from here. The old one is left in place, not deleted. */
+
+  /* The table, the coach and the reference were taken off the page. Their code is left in
+     place so they can be put back, but with only the hero in the document every lookup
+     below would be null. */
+  if (!$('#play')) return;
+
+  renderFaanRef();
+  $('#startBtn').addEventListener('click', function () {
+    $('#play').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  $('#newGame').addEventListener('click', newHand);
+  $('#askInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') ask(this.value); });
+  $('#askBtn').addEventListener('click', function () { ask($('#askInput').value); });
+
+  newHand();
+
+  $('#askRow').hidden = true;
+  $('#coachOffline').hidden = false;
+  $('#coachOffline').innerHTML = 'Connecting to the coach<span class="dots"></span>';
+  if (window.claude && window.claude.use) {
+    window.claude.use('sample').then(function (s) {
+      if (!s) return coachUnavailable();
+      sampler = s;
+      $('#askRow').hidden = false;
+      $('#coachOffline').hidden = true;
+      renderPrompts();
+      bubble('assistant', fmt('I can see your hand, what everyone has thrown, and the exact counting ' +
+        'behind it. Ask me what to throw, whether to claim, or how the faan would add up — in English or Cantonese.'));
+    }).catch(coachUnavailable);
+  } else {
+    coachUnavailable();
+  }
+}
+boot(null);
+
+</script>
+
+<!-- The dragon is dropped. Its files are still here: gold-dragon-swim.mjs and
+     gold-dragon.png (the illustrated one, which borrows SwimPath from dragon-swim.mjs),
+     and dragon-swim.mjs + dragon-model*.mjs + vendor/three (the 3D sculpt). To bring
+     either back, restore the module script below.
+<script type="module">
+  import { mountGoldDragon } from './gold-dragon-swim.mjs';
+  const hero = document.querySelector('.hero');
+  if (hero) mountGoldDragon(hero).catch(() => {});
+</script>
+-->
+
+<!-- Play is the next page, and it is the one everybody here is going to. Its parts are
+     pulled down while this page sits idle, so the press on PLAY meets a warm cache
+     instead of a blank screen. -->
+<link rel="prefetch" href="play/index.html">
+<link rel="prefetch" href="play/style.css">
+<link rel="prefetch" href="play/app.js">
+<link rel="prefetch" href="play/practice.mjs">
+<link rel="prefetch" href="play/tile-art/table.webp">
+
+<!-- The dragon swims through the wordmark. The frame it lives in cannot see these letters,
+     so the page draws them for it: a mask, white on nothing, measured letter by letter
+     where they actually sit, so it lands on them whatever the type is doing. The frame
+     uses it as depth, not as paint: anything behind a letter is never drawn, and the
+     letter underneath shows through. -->
+<script>
+(() => {
+  const frame = document.querySelector('.dragon-stage'), hero = document.querySelector('.hero');
+  if (!frame || !hero) return;
+  let canvas;
+  window.__heroMask = () => {
+    const r = hero.getBoundingClientRect();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas = canvas || document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(r.width * dpr));
+    canvas.height = Math.max(1, Math.round(r.height * dpr));
+    const g = canvas.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, r.width, r.height);
+    g.fillStyle = '#fff';
+    g.textBaseline = 'alphabetic';
+    for (const el of hero.querySelectorAll('.hero-stage i')) {
+      const b = el.getBoundingClientRect(), cs = getComputedStyle(el);
+      g.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+      const m = g.measureText(el.textContent);
+      /* half-leading: the glyph box sits centred in the line box the letter reports */
+      const base = b.top - r.top + (b.height - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2
+        + m.fontBoundingBoxAscent;
+      g.fillText(el.textContent, b.left - r.left, base);
+    }
+    return canvas;
+  };
+  const tell = () => { try { frame.contentWindow.__heroMaskChanged(); } catch { /* not ready */ } };
+  let t; const refresh = () => { clearTimeout(t); t = setTimeout(tell, 120); };
+  addEventListener('resize', refresh);
+  if (document.fonts) document.fonts.ready.then(refresh);
+  setTimeout(refresh, 2300);   /* once the letters have settled where they belong */
+})();
+</script>

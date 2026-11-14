@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="104" height="136" viewBox="0 0 104 136"><defs>
+<linearGradient id="shell" x1="0" y1="0" x2=".23" y2="1"><stop stop-color="#fffdf9"/><stop offset=".6" stop-color="#e7dccd"/><stop offset="1" stop-color="#bfa98a"/></linearGradient>
+<linearGradient id="ivory" x1="0" y1="0" x2=".25" y2="1"><stop stop-color="#fffefa"/><stop offset=".3" stop-color="#faf6ee"/><stop offset=".86" stop-color="#eee6db"/><stop offset="1" stop-color="#ddd0be"/></linearGradient>
+<linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".95"/><stop offset=".23" stop-color="#fff" stop-opacity=".24"/><stop offset=".78" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#fff" stop-opacity=".7"/></linearGradient>
+<linearGradient id="jade" x1="0" y1="0" x2=".24" y2="1"><stop stop-color="#a6cc58"/><stop offset=".12" stop-color="#79a92e"/><stop offset=".68" stop-color="#628e1f"/><stop offset="1" stop-color="#355813"/></linearGradient>
+<linearGradient id="ink" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#18263d"/><stop offset=".47" stop-color="#142a4d"/><stop offset="1" stop-color="#080f21"/></linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a42320"/><stop offset=".45" stop-color="#c4382c"/><stop offset="1" stop-color="#711412"/></linearGradient>
+<linearGradient id="green" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#183a27"/><stop offset=".5" stop-color="#3c6446"/><stop offset="1" stop-color="#183322"/></linearGradient>
+<clipPath id="side"><rect width="76" height="136" rx="12"/></clipPath>
+<clipPath id="back"><rect width="104" height="136" rx="12"/></clipPath>
+<filter id="recess" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceAlpha" stdDeviation=".72" result="relief"/>
+<feSpecularLighting in="relief" surfaceScale="2.6" specularConstant=".65" specularExponent="14" lighting-color="#fff6e5" result="gloss">
+<feDistantLight azimuth="230" elevation="44"/>
+</feSpecularLighting>
+<feComposite in="gloss" in2="SourceAlpha" operator="in" result="lacquer"/>
+<feBlend in="SourceGraphic" in2="lacquer" mode="screen" result="inkFinish"/>
+<feDropShadow in="SourceGraphic" dx="0" dy="-.38" stdDeviation=".42" flood-color="#695439" flood-opacity=".48" result="edge"/>
+<feMerge><feMergeNode in="edge"/><feMergeNode in="inkFinish"/></feMerge>
+</filter></defs><g filter="url(#recess)"><g transform="translate(-3 -1) scale(.92)"><g transform="translate(0 .8)" opacity=".32"><circle cx="35" cy="42" r="9.7" fill="none" stroke="url(#ink)" stroke-width="4" /><circle cx="35" cy="42" r="3.88" fill="url(#ink)" /><circle cx="85" cy="42" r="9.7" fill="none" stroke="url(#green)" stroke-width="4" /><circle cx="85" cy="42" r="3.88" fill="url(#green)" /><circle cx="35" cy="106" r="9.7" fill="none" stroke="url(#ink)" stroke-width="4" /><circle cx="35" cy="106" r="3.88" fill="url(#ink)" /><circle cx="85" cy="106" r="9.7" fill="none" stroke="url(#green)" stroke-width="4" /><circle cx="85" cy="106" r="3.88" fill="url(#green)" /></g><circle cx="35" cy="42" r="9.7" fill="none" stroke="url(#ink)" stroke-width="4" /><circle cx="35" cy="42" r="3.88" fill="url(#ink)" /><circle cx="85" cy="42" r="9.7" fill="none" stroke="url(#green)" stroke-width="4" /><circle cx="85" cy="42" r="3.88" fill="url(#green)" /><circle cx="35" cy="106" r="9.7" fill="none" stroke="url(#ink)" stroke-width="4" /><circle cx="35" cy="106" r="3.88" fill="url(#ink)" /><circle cx="85" cy="106" r="9.7" fill="none" stroke="url(#green)" stroke-width="4" /><circle cx="85" cy="106" r="3.88" fill="url(#green)" /></g></g></svg>
