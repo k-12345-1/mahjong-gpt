@@ -140,6 +140,28 @@ const LESSONS = [
     },
   },
   {
+    title: 'Runs',
+    intro: true,
+    steps: true,
+    say: 'A run \u2014 a chow, or shung \u2014 is three tiles in a row in one suit. You can build one quietly in your hand and show it only when the hand is over.\nOr you can claim one. If the player on your left discards the tile you need, say so: the run goes down in front of you, face up, there and then.\nOnly that player\u2019s discard will do. You cannot reach across the table for a run, or cut in ahead of somebody else\u2019s turn. The one exception is the tile that wins the hand \u2014 that you may take from anyone.',
+    /* Which runs are worth starting, shown rather than explained: the gap in the middle of
+       a suit can be filled from either side, the one at the end from one side only. */
+    cards: [
+      { cap: 'Open at both ends', tiles: ['dots-4', 'dots-5'],
+        note: 'A 3 or a 6 finishes it.' },
+      { cap: 'Closed at the end', tiles: ['dots-8', 'dots-9'],
+        note: 'Only a 7 will do.' },
+    ],
+    task: {
+      kind: 'choice',
+      prompt: 'You hold the 8 and 9 of dots. Which tile finishes the run?',
+      options: ['The 7 of dots', 'The 10 of dots', 'The 7 of bamboo'],
+      answer: 0,
+      note: 'Only a 7, because a suit stops at 9. A run at either end can be filled from one side alone, which is what makes 1-2-3 and 7-8-9 harder to put together than the runs in the middle.',
+      wrong: 'A run is three in a row in one suit, and the numbers stop at 9.',
+    },
+  },
+  {
     title: 'Pung',
     wide: true,
     intro: true,
@@ -194,6 +216,20 @@ const LESSONS = [
     },
   },
   {
+    title: 'Eyes',
+    intro: true,
+    wide: true,
+    say: 'Four sets are not a hand on their own. You need a pair as well \u2014 two of the identical tile, called the eyes.\n[[green-dragon green-dragon]]\nThey stay in your hand to the end. You cannot call for a pair mid-hand the way you can call a pung, but the tile that completes your eyes and wins you the hand may come from any player at the table.',
+    task: {
+      kind: 'choice',
+      prompt: 'You need one more tile for your pair, and it wins. The player opposite discards it. May you take it?',
+      options: ['Yes \u2014 the winning tile can come from anyone', 'No \u2014 only the player on your left', 'Only if it also completes a set'],
+      answer: 0,
+      note: 'The tile that wins can be claimed from any seat. Mid-hand it would be different: a pair on its own is not something you can call for.',
+      wrong: 'Think about which claims are open to the whole table, and which are not.',
+    },
+  },
+  {
     title: 'Sitting down',
     intro: true,
     wide: true,
@@ -235,6 +271,26 @@ const LESSONS = [
       answer: 1,
       note: 'A chow can only be taken by the player whose turn is next, and after North comes East. Had you needed it for a pung, you could have claimed it from anybody.',
       wrong: 'Think about whose turn follows North, and which claims are open to the whole table.',
+    },
+  },
+  {
+    title: 'Value sets',
+    intro: true,
+    steps: true,
+    say: 'Some sets are worth more than the place they fill. A pung or a kong of dragons is one \u2014 red, green or white, it pays a faan to whoever holds it.\nWinds pay only if they are yours: the wind you are sitting, or the wind the round is named for. Any other wind is three tiles and nothing more. A pung of East, held by East in the East round, scores for both.',
+    cards: [
+      { cap: 'Dragons', tiles: ['red-dragon', 'red-dragon', 'red-dragon'],
+        note: 'A faan for anyone holding it.' },
+      { cap: 'Your wind', tiles: ['east', 'east', 'east'],
+        note: 'Your own seat, or the round.' },
+    ],
+    task: {
+      kind: 'choice',
+      prompt: 'You are sitting West in the East round. Which of these pungs is worth a faan?',
+      options: ['Three green dragons', 'Three South winds', 'Three 9 of bamboo'],
+      answer: 0,
+      note: 'Dragons pay for anyone. South is neither your seat nor the round, so that pung is worth nothing extra \u2014 and a pung of nines is just a pung.',
+      wrong: 'Dragons are always worth something. A wind has to be your own seat or the round.',
     },
   },
   {
