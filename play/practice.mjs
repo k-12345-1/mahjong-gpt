@@ -72,7 +72,7 @@ const ROUNDS=4;
 let match={level:'beginner',minFaan:3,round:0,dealt:0,nextDealer:1,
   wins:[0,0,0,0],score:[0,0,0,0],winner:null};
 let settings={level:match.level,minFaan:match.minFaan};
-const blankMatch=()=>({...settings,round:0,dealt:0,nextDealer:1,
+const blankMatch=()=>(saidDirection=false,{...settings,round:0,dealt:0,nextDealer:1,
   wins:[0,0,0,0],score:[0,0,0,0],winner:null});
 /* What a hand has to be worth to be declared. A beginner table takes a chicken hand,
    which is a hand with nothing in it at all, so its minimum is none. */
@@ -89,6 +89,8 @@ export function nextDeal({dealer,round,dealt,winner}){
   return {dealer:keeps?dealer:(dealer+1)%4,round:nextRound,dealt:nextDealt,over:nextRound>=ROUNDS};
 }
 let handDecisions=[], completedHands=[];
+/* The folk-heuristic caveat is said once a match, not once a turn. */
+let saidDirection=false;
 let coachOpen=false;
 function draw(p){
   while(wall.length){
@@ -622,7 +624,22 @@ function coachTip(){
         ?' would leave you '+distanceText(mine.distance)+'.'
         :' is the same distance, on '+mine.copies+' improving tiles against '+pick.copies+'.')+'</i>'
     :'';
-  return mark+'<b>Discard '+tileName(pick.tile)+'</b> \u2014 '+pick.why+'.'+against
+  /* Name the hand it is steering towards, once it has one. The seven-tile threshold is a
+     working rule out of two commercial sources rather than anything published, and the
+     report is firm that a coach which says so is more useful than one that states it as
+     fact -- so it is said, once a match, the first time a direction is named. */
+  const dir=pick.direction;
+  let heading='';
+  /* Only where there is a minimum to clear. At a beginner table a chicken hand pays, the
+     coach is not steering anywhere, and naming a direction it is not playing to would
+     contradict the tile it just recommended. */
+  if(minFaan()&&dir&&dir.name&&dir.kind!=='value-pungs'){
+    heading=' <i>You are on '+dir.name+', '+dir.faan+' faan.'
+      +(dir.rule&&!saidDirection?' '+dir.rule+' is a working rule, not a published one.':'')
+      +'</i>';
+    if(dir.rule)saidDirection=true;
+  }
+  return mark+'<b>Discard '+tileName(pick.tile)+'</b> \u2014 '+pick.why+'.'+against+heading
     +'</span></p>';
 }
 function matchPanel(){

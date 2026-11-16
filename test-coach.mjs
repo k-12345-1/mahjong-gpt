@@ -1,5 +1,5 @@
 /* What the coach tells you to throw. Run: node test-coach.mjs */
-import { recommend, handDistance, faanCeiling } from './play/coach.mjs';
+import { recommend, handDistance, faanCeiling, direction } from './play/coach.mjs';
 import assert from 'node:assert/strict';
 
 /* 0-8 characters, 9-17 dots, 18-26 bamboo, 27-30 winds (E S W N), 31-33 dragons */
@@ -21,14 +21,60 @@ const complete = [0, 1, 2, 9, 10, 11, 18, 19, 20, 4, 4, 5, 5];
   assert.doesNotMatch(pick.why, /lone|beside/);
 }
 
-/* With a faan minimum to clear, a hand that is nearly all one suit stops throwing that
-   suit: the lone wind goes instead of the ninth bamboo. */
+/* With a faan minimum to clear, the opening discards invert ordinary tile efficiency.
+   Seven bamboo is a flush lane, so the one dots tile goes first -- not the ninth bamboo
+   that shape alone would throw, and not the lone wind either. Riichi and Mainland guides
+   say to shed the honours first when flushing; the report calls that actively wrong here,
+   because in Hong Kong the honours are the faan that lifts the flush over the floor. */
 {
   const hand = [0, 2, 6, 9, 20, 22, 23, 25, 25, 25, 26, 28, 30, 32];
-  assert.equal(recommend(hand, 0, [], { minFaan: 0 }).tile, 26);
+  /* No minimum, so a chicken hand pays and there is no lane to clear. What leaves is still
+     the loosest thing in the hand -- a lone wind that pays nothing, three live tiles
+     against eight for a two-sided shape -- and not the ninth bamboo sitting beside a pung,
+     which is what counting improving draws on its own used to pick. */
+  const plain = recommend(hand, 0, [], { minFaan: 0 });
+  assert.equal(plain.tile, 28, 'the lone South, which can never be worth a faan');
+  const place = t => plain.ranked.findIndex(c => c.tile === t);
+  assert.ok(place(32) > place(28) && place(32) > place(30),
+    'the green dragon outlives the winds that pay nothing');
+  assert.ok(place(26) > place(9), 'the ninth bamboo has a pung beside it; the dots has nothing');
+
   const steered = recommend(hand, 0, [], { minFaan: 3 });
-  assert.equal(steered.tile, 28);
-  assert.match(steered.why, /lone honour/);
+  assert.equal(steered.direction.kind, 'half-flush');
+  assert.equal(steered.tile, 9, 'the single dots tile is the shortest lane to clear');
+  /* and now the characters go before the honours, which is the inversion itself */
+  assert.ok(steered.ranked.findIndex(c => c.tile === 0)
+          < steered.ranked.findIndex(c => c.tile === 28), 'off-suit before lone winds');
+  assert.match(steered.why, /collecting bamboo/);
+  /* the green dragon is the one faan source in the hand, so it is nowhere near the top */
+  assert.ok(steered.ranked.findIndex(c => c.tile === 32) > 3, 'the dragon is a keeper');
+}
+
+/* The hand from the table, which is what sent us here: seven characters, three strays in
+   two other suits, four lone honours and a red dragon among them. The coach was throwing
+   a character and ranking the one dots tile eighth. */
+{
+  const hand = [0, 2, 3, 4, 4, 4, 6, 14, 18, 20, 28, 29, 30, 31];
+  const pick = recommend(hand, 0, [], { minFaan: 3, melds: [] });
+  assert.equal(pick.direction.kind, 'half-flush');
+  assert.equal(pick.direction.suit, 0, 'characters');
+  assert.equal(pick.tile, 14, 'the lone dots tile, the shortest suit out');
+  const place = tile => pick.ranked.findIndex(c => c.tile === tile);
+  assert.ok(place(18) < place(0) && place(20) < place(0), 'both bamboo go before any character');
+  assert.ok(place(31) > place(14), 'the red dragon is not thrown before the strays');
+  assert.ok(place(31) > place(28) && place(31) > place(29) && place(31) > place(30),
+    'and not before the winds that pay nothing either');
+  /* and with no minimum there is no lane to clear, so none of this applies */
+  assert.equal(recommend(hand, 0, [], { minFaan: 0 }).direction.kind, 'half-flush');
+}
+
+/* A direction is only a direction in a suit the melds have not already closed. */
+{
+  const bamboo = [18, 19, 20, 22, 23, 24, 26, 26];
+  /* nothing but bamboo in it, so the clean flush is still on */
+  assert.equal(direction(bamboo, []).kind, 'full-flush');
+  assert.equal(direction([...bamboo, 31], []).kind, 'half-flush', 'a dragon makes it mixed');
+  assert.equal(direction(bamboo, [[0, 1, 2]]).kind, 'undecided', 'a characters run is down');
 }
 
 /* Tiles already on the table are not coming back: a lone honour with three gone is a

@@ -111,6 +111,52 @@ export function faanCeiling(concealed, melds = [], opts = {}) {
   return Math.max(1, shape + value + (melds.length ? 0 : 1));
 }
 
+/* ---- which hand is this going to be? -----------------------------------------------
+   Seven tiles of one suit points at a flush; three pairs point at All Pungs. Both come
+   from TileBuddy by way of reports/Hong Kong mahjong coaching strategy.md, which is
+   careful to say that the counts are one commercial source and the draw 6-8 deadline
+   another, and that the combination is the researcher's synthesis rather than a published
+   standard. It is a working rule, and the coach says so when it leans on it.
+
+   A suit the melds have already ruled out is not a direction, for the same reason as in
+   faanCeiling: those tiles are face up and do not come back. */
+const FLUSH_TILES = 7, PUNG_PAIRS = 3;
+/* the thresholds are said in words, the way the rest of the app counts, and stay in step
+   with the numbers above rather than being written out twice */
+const WORDS = { 3: 'Three', 7: 'Seven' };
+export const SUITS = ['characters', 'dots', 'bamboo'];
+
+export function direction(hand, melds = [], opts = {}) {
+  const { seatWind = 27, roundWind = 27 } = opts;
+  const down = melds.flat();
+  const all = [...hand, ...down].filter(tile => tile < 34);
+  const counts = Array(34).fill(0);
+  for (const tile of all) counts[tile]++;
+  const meldSuits = new Set(down.filter(tile => tile < 27).map(suitOf));
+  const suited = [0, 1, 2].map(s => all.filter(tile => suitOf(tile) === s).length);
+  const open = [0, 1, 2].filter(s => !meldSuits.size || (meldSuits.size === 1 && meldSuits.has(s)));
+  const top = open.reduce((best, s) => (suited[s] > suited[best] ? s : best), open[0] ?? 0);
+
+  if (open.length && suited[top] >= FLUSH_TILES) {
+    const honours = all.some(tile => tile >= 27);
+    return { kind: honours ? 'half-flush' : 'full-flush', suit: top,
+             name: (honours ? 'a half flush in ' : 'a clean flush in ') + SUITS[top],
+             faan: honours ? 3 : 7, suited,
+             rule: WORDS[FLUSH_TILES] + ' tiles of one suit' };
+  }
+  if (counts.filter(n => n >= 2).length >= PUNG_PAIRS && !melds.some(m => m.length && !m.every(t => t === m[0])))
+    return { kind: 'all-pungs', name: 'all pungs', faan: 3, suited,
+             rule: WORDS[PUNG_PAIRS] + ' pairs' };
+  const pays = new Set([...DRAGONS, seatWind, roundWind]);
+  if ([...pays].some(tile => counts[tile] >= 2))
+    return { kind: 'value-pungs', name: 'a value pung', faan: 1, suited, rule: '' };
+  return { kind: 'undecided', name: '', suited, rule: '' };
+}
+
+/* A hand this close has stopped choosing what it wants to be, so shape decides the rest.
+   The shedding rules below are opening-discard rules and they stop applying here. */
+const STILL_SHAPING = 2;
+
 export function recommend(hand, exposed, publicTiles, opts = {}) {
   const { seatWind = 27, roundWind = 27, minFaan = 0, melds = [] } = opts;
   const scored = opts.choices || discardChoices(hand, exposed, publicTiles);
@@ -128,22 +174,54 @@ export function recommend(hand, exposed, publicTiles, opts = {}) {
     : (pays.has(tile) && counts[tile] >= 2 ? 8 : 0)
     + (clean && suitOf(tile) === dominant ? 5 : 0);
 
-  /* Legality sorts above shape, and when nothing left is legal the coach says which wall
-     the hand has run into rather than quietly recommending the prettiest dead hand. */
-  const ranked = scored.map(c => {
-    const rest = hand.slice(); rest.splice(rest.indexOf(c.tile), 1);
-    const ceiling = faanCeiling(rest, melds, { seatWind, roundWind });
-    return { ...c, ceiling, legal: !minFaan || ceiling >= minFaan, merit: c.copies - cost(c.tile) };
-  }).sort((a, b) => (b.legal - a.legal) || a.distance - b.distance || b.merit - a.merit || a.tile - b.tile);
-  const best = ranked[0];
-  const blocked = !!minFaan && !ranked.some(c => c.legal);
+  /* While a flush is still being built, the tiles that leave are the ones that can never
+     be part of it, shortest suit first to clear a lane. Ordinary tile efficiency says the
+     opposite -- a scattered hand has more draws that improve it -- and riichi guides say
+     to throw the honours first, which the report calls actively wrong here: in Hong Kong
+     the honours are the faan that lifts a half flush over the floor. */
+  const dir = opts.direction || direction(hand, melds, { seatWind, roundWind });
+  const shaping = Math.min(...scored.map(c => c.distance)) >= STILL_SHAPING;
+  /* Only where there is a minimum to clear. With none, a chicken hand pays and ordinary
+     tile efficiency is right again -- it is the minimum that inverts it. */
+  const lane = minFaan && shaping && (dir.kind === 'half-flush' || dir.kind === 'full-flush')
+    ? dir.suit : -1;
+  const shed = tile => {
+    const su = suitOf(tile);
+    if (lane < 0 || su < 0 || su === lane) return 99;
+    /* the shorter the suit the sooner it is gone, and a pair is not broken to do it */
+    return dir.suited[su] * 2 + (counts[tile] >= 2 ? 1 : 0);
+  };
 
-  /* a tile with nothing built on it: no pair, and in a suit, no neighbour to run with */
+  /* A tile with nothing built on it: no pair, and in a suit, no neighbour to run with.
+     It is the weakest thing a hand can hold -- MahjongSpot's own arithmetic puts a lone
+     tile waiting to pair at three live tiles against eight for a two-sided shape -- so it
+     leaves before a tile that connects, whatever the table's minimum. Counting improving
+     draws alone says the opposite, because a scattered hand has more of them. */
   const alone = tile => counts[tile] === 1
     && (tile >= 27 || ![-2, -1, 1, 2].some(d => suitOf(tile + d) === suitOf(tile) && counts[tile + d]));
 
+  /* Legality sorts above everything, then the lane, then shape, then what is loose: when
+     nothing left is legal the coach says which wall the hand has run into rather than
+     quietly recommending the prettiest dead hand. */
+  const ranked = scored.map(c => {
+    const rest = hand.slice(); rest.splice(rest.indexOf(c.tile), 1);
+    const ceiling = faanCeiling(rest, melds, { seatWind, roundWind });
+    return { ...c, ceiling, shed: shed(c.tile), lonely: alone(c.tile),
+             /* a dragon pays whoever holds it and a seat or round wind pays you, so where
+                two tiles are equally loose and equally little use, the one that could still
+                be worth a faan is the one to keep -- at any table, minimum or not */
+             pays: pays.has(c.tile) ? 1 : 0,
+             legal: !minFaan || ceiling >= minFaan, merit: c.copies - cost(c.tile) };
+  }).sort((a, b) => (b.legal - a.legal) || (a.shed - b.shed) || a.distance - b.distance
+                 || (b.lonely - a.lonely) || (a.pays - b.pays) || b.merit - a.merit
+                 || a.tile - b.tile);
+  const best = ranked[0];
+  const blocked = !!minFaan && !ranked.some(c => c.legal);
+
   const why =
     blocked ? 'this hand can no longer reach ' + minFaan + ' faan, so it cannot be declared -- play it out safely'
+    : best.shed < 99 ? 'you are collecting ' + SUITS[lane] + ', and ' + SUITS[suitOf(best.tile)]
+        + ' is the shortest way out of the hand'
     : best.distance === -1 ? 'the hand is already complete'
     : alone(best.tile) && best.tile >= 27
       ? (gone[best.tile] >= 2 ? 'a lone honour, and most of the others are already out'
@@ -154,5 +232,5 @@ export function recommend(hand, exposed, publicTiles, opts = {}) {
     : best.copies ? best.copies + ' unseen tiles would improve what is left'
     : 'it costs the hand least';
 
-  return { ...best, why, blocked, runnerUp: ranked[1] || null, ranked };
+  return { ...best, why, blocked, direction: dir, runnerUp: ranked[1] || null, ranked };
 }
