@@ -59,7 +59,7 @@ const suggestion = hand => hand.reduce((best,_,i)=>score(hand,i)<score(hand,best
    so the dealer is always East and every seat takes East in turn. */
 let dealer=0;
 const windOf=p=>(p-dealer+4)%4;
-let wall,hands,bonuses,melds,rivers,seat,phase,choice,offer,timer,note,coach,root,onDiscard,canSelfDraw,claimNotice,analysisCache,newTileIndex,lastDiscard;
+let wall,hands,bonuses,melds,rivers,seat,phase,choice,offer,timer,note,coach=true,root,onDiscard,canSelfDraw,claimNotice,analysisCache,newTileIndex,lastDiscard;
 const levels={
   beginner:{label:'Beginner',think:1000,review:2000},
   intermediate:{label:'Intermediate',think:700,review:1400},
@@ -74,9 +74,12 @@ let match={level:'beginner',minFaan:3,round:0,dealt:0,nextDealer:1,
 let settings={level:match.level,minFaan:match.minFaan};
 const blankMatch=()=>(saidDirection=false,{...settings,round:0,dealt:0,nextDealer:1,
   wins:[0,0,0,0],score:[0,0,0,0],winner:null});
-/* What a hand has to be worth to be declared. A beginner table takes a chicken hand,
-   which is a hand with nothing in it at all, so its minimum is none. */
-const minFaan=()=>match.level==='beginner'?0:match.minFaan;
+/* What a hand has to be worth to be declared, and it is the table's own rule rather than
+   a tier of difficulty. The research is plain that the minimum is the thing that makes
+   Hong Kong play the way it does -- without it "play reverts to speed-first", which is a
+   different game with different right answers, not an easier version of this one. So the
+   difficulty settles how fast the other three think, and this settles what counts. */
+const minFaan=()=>match.minFaan;
 const seatName=p=>p===0?'You':winds[windOf(p)];
 const standings=()=>match.score.map((f,p)=>seatName(p)+' '+f).join(' · ');
 /* Where the deal and the round stand once a hand is over. East keeps the deal by
@@ -135,7 +138,10 @@ function reset(){
   hands=Array.from({length:4},()=>[]);bonuses=Array.from({length:4},()=>[]);
   melds=Array.from({length:4},()=>[]);rivers=Array.from({length:4},()=>[]);
   for(let i=0;i<13;i++)for(let p=0;p<4;p++)draw(p);
-  choice=-1;offer=null;coach=match.level==='beginner';claimNotice='';
+  /* The coach is the player's switch, not the level's and not the hand's: it used to be
+     set here from the difficulty, which turned it off again at every new deal for anyone
+     playing above beginner who had just turned it on. */
+  choice=-1;offer=null;claimNotice='';
   draw(dealer);
   if(dealer===0)sortPlayer();else hands[0].sort((a,b)=>a-b);
   newTileIndex=-1;lastDiscard=null;
@@ -650,7 +656,7 @@ function matchPanel(){
     '<label>Difficulty <select data-match="level">'+
     Object.entries(levels).map(([id,level])=>'<option value="'+id+'" '+(settings.level===id?'selected':'')+'>'+level.label+'</option>').join('')+
     '</select></label>'+
-    '<label>Faan minimum <select data-match="minFaan"'+(settings.level==='beginner'?' disabled':'')+'>'+
+    '<label>Faan minimum <select data-match="minFaan">'+
     faanOptions.map(n=>'<option value="'+n+'" '+(settings.minFaan===n?'selected':'')+'>'+n+'</option>').join('')+
     '</select></label>'+
     '<label>Between turns <select data-match="turn">'+
@@ -658,9 +664,9 @@ function matchPanel(){
     '</select></label>'+
     '<label class="practice-switch"><span>Play with coach</span>'+
     '<input type="checkbox" data-match="coach" '+(coach?'checked':'')+'></label>'+
-    '<p class="muted practice-match-note">'+(settings.level==='beginner'
-      ?'A beginner table takes a chicken hand, so any four sets and a pair can be declared.'
-      :'A hand has to be worth the minimum before it can be declared.')
+    '<p class="muted practice-match-note">'+(settings.minFaan
+      ?'A hand has to be worth '+settings.minFaan+' faan before it can be declared, which is what makes the game about value rather than speed.'
+      :'With no minimum any four sets and a pair can be declared, and the hand becomes a race.')
       +' A match is four rounds, East through North, and the deal passes each hand unless East wins it.</p>'+
     '<button class="btn" data-practice="new-match">Start new match</button>'+
   '</div></div>'
