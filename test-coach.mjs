@@ -33,18 +33,24 @@ const complete = [0, 1, 2, 9, 10, 11, 18, 19, 20, 4, 4, 5, 5];
      against eight for a two-sided shape -- and not the ninth bamboo sitting beside a pung,
      which is what counting improving draws on its own used to pick. */
   const plain = recommend(hand, 0, [], { minFaan: 0 });
-  assert.equal(plain.tile, 28, 'the lone South, which can never be worth a faan');
+  assert.equal(plain.tile, 28, 'the lone South, the loosest thing in the hand');
   const place = t => plain.ranked.findIndex(c => c.tile === t);
-  assert.ok(place(32) > place(28) && place(32) > place(30),
-    'the green dragon outlives the winds that pay nothing');
   assert.ok(place(26) > place(9), 'the ninth bamboo has a pung beside it; the dots has nothing');
+  /* With nothing to clear, the coach is only answering how to get to mahjong: no lane to
+     shed into, and the green dragon is not held back for a faan nobody needs. */
+  assert.ok(plain.ranked.every(c => c.shed === 99), 'no lane without a minimum');
+  assert.ok(plain.ranked.every(c => c.pays === 0), 'and no faan to protect');
 
   const steered = recommend(hand, 0, [], { minFaan: 3 });
   assert.equal(steered.direction.kind, 'half-flush');
   assert.equal(steered.tile, 9, 'the single dots tile is the shortest lane to clear');
   /* and now the characters go before the honours, which is the inversion itself */
-  assert.ok(steered.ranked.findIndex(c => c.tile === 0)
-          < steered.ranked.findIndex(c => c.tile === 28), 'off-suit before lone winds');
+  const seat = t => steered.ranked.findIndex(c => c.tile === t);
+  assert.ok(seat(0) < seat(28), 'off-suit before lone winds');
+  /* with a minimum, and only then, the dragon is held back behind the winds that pay
+     nothing: it is the cheapest faan on the table and they are worth three tiles each */
+  assert.ok(seat(32) > seat(28) && seat(32) > seat(30), 'the green dragon is kept longest');
+  assert.equal(steered.ranked.find(c => c.tile === 32).pays, 1);
   assert.match(steered.why, /collecting bamboo/);
   /* the green dragon is the one faan source in the hand, so it is nowhere near the top */
   assert.ok(steered.ranked.findIndex(c => c.tile === 32) > 3, 'the dragon is a keeper');

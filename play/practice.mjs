@@ -839,10 +839,10 @@ export function mountPractice(el, onPlayerDiscard){
   };
   el.onchange=e=>{
     const control=e.target;
-    /* The minimum is repainted with the level, because a beginner table does not
-       hold a hand to one and the control says so by going quiet. */
     if(control.dataset.match==='level'&&Object.hasOwn(levels,control.value)){settings.level=control.value;paint();}
-    if(control.dataset.match==='minFaan'&&[0,1,2,3,5].includes(Number(control.value)))settings.minFaan=Number(control.value);
+    /* The note under the settings says what the chosen minimum does to the game, so
+       choosing one has to repaint it. */
+    if(control.dataset.match==='minFaan'&&[0,1,2,3,5].includes(Number(control.value))){settings.minFaan=Number(control.value);paint();}
     if(control.dataset.match==='turn'&&TURN_CHOICES.some(([ms])=>ms===Number(control.value)))turnMs=Number(control.value);
     if(control.dataset.match==='coach'){coach=control.checked;paint();}
   };

@@ -207,10 +207,12 @@ export function recommend(hand, exposed, publicTiles, opts = {}) {
     const rest = hand.slice(); rest.splice(rest.indexOf(c.tile), 1);
     const ceiling = faanCeiling(rest, melds, { seatWind, roundWind });
     return { ...c, ceiling, shed: shed(c.tile), lonely: alone(c.tile),
-             /* a dragon pays whoever holds it and a seat or round wind pays you, so where
-                two tiles are equally loose and equally little use, the one that could still
-                be worth a faan is the one to keep -- at any table, minimum or not */
-             pays: pays.has(c.tile) ? 1 : 0,
+             /* Where there is a minimum, a dragon or your own wind is the cheapest faan in
+                the game, so between two tiles equally loose and equally little use the one
+                that could still pay is the one to keep. Where there is none, none of that
+                matters: any four sets and a pair can be declared, so the only question
+                left is which tile gets you there soonest. */
+             pays: minFaan && pays.has(c.tile) ? 1 : 0,
              legal: !minFaan || ceiling >= minFaan, merit: c.copies - cost(c.tile) };
   }).sort((a, b) => (b.legal - a.legal) || (a.shed - b.shed) || a.distance - b.distance
                  || (b.lonely - a.lonely) || (a.pays - b.pays) || b.merit - a.merit
