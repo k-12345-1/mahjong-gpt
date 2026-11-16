@@ -7,7 +7,7 @@
    with different tiles -- being shown the same three red dragons twice teaches nothing.
    Tiles are drawn in the table's own art: [[bamboo-1 bamboo-2 bamboo-3]] in an answer draws
    that run of tiles. */
-import { faces, label, img } from './practice.mjs';
+import { faces, label, img, tableState } from './practice.mjs';
 
 const FACE_SET = new Set(faces);
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -339,7 +339,44 @@ function type(node, text) {
   }, 16);
 }
 
-function send(question) {
+/* ---- the coach that thinks ---------------------------------------------------------
+   Asked for once and remembered. Null everywhere the page is served without it -- on a
+   plain web server, or to a viewer who says no -- and then the book below answers
+   instead, which is the whole reason the book is still here. */
+let sampler, asked;
+function coach() {
+  if (!asked) asked = window.claude && window.claude.use
+    ? window.claude.use('sample').then(s => (sampler = s)).catch(() => null)
+    : Promise.resolve(null);
+  return asked;
+}
+
+/* Memoryless: the rules, the table, the app's own page on the subject and the question,
+   every time. The page goes in so the coach and the rest of the app cannot contradict
+   each other on a point of rules. */
+function brief(question, page) {
+  const state = tableState();
+  const parts = [
+    'You are the coach inside Mahjong GPT, a Hong Kong mahjong app. Hong Kong old style: '
+    + 'thirteen tiles, four sets and a pair, scored in faan, with a minimum to go out.',
+    'Answer the question that was actually asked, in two or three short sentences of plain '
+    + 'English. No lists, no headings, no markdown, no greeting. If you do not know, say so '
+    + 'plainly -- never answer a neighbouring question instead.',
+    'To show tiles, name them inside double square brackets: [[dots-5 dots-6]], '
+    + '[[red-dragon]], [[east]]. Suited tiles are characters-1 to characters-9, dots-1 to '
+    + 'dots-9, bamboo-1 to bamboo-9. Honours are east, south, west, north, red-dragon, '
+    + 'green-dragon, white-dragon. Show tiles only where seeing them helps.',
+  ];
+  parts.push(state
+    ? 'The table in front of the player right now:\n' + JSON.stringify(state, null, 1)
+    : 'No hand is in play, so this is a question about the rules, not about a hand.');
+  if (page) parts.push("The app's own page on this subject. Where it covers the question, "
+    + 'agree with it:\n' + page);
+  parts.push('Question: ' + question);
+  return parts.join('\n\n');
+}
+
+async function send(question) {
   const q = question.trim();
   if (!q || busy) return;
   busy = true;
@@ -349,6 +386,36 @@ function send(question) {
 
   const answer = say('coach', '<span class="gpt-wait" role="status" aria-label="Thinking"></span>');
   const found = lookup(q);
+
+  const model = await coach();
+  if (model) {
+    try {
+      let out = '';
+      const reply = await model(brief(q, found), {
+        modelTier: 'quick',
+        /* text is the whole answer so far, not the latest piece, so it is assigned */
+        onText: ({ text }) => {
+          out = text;
+          answer.className = 'gpt-line coach';
+          answer.innerHTML = body(text);
+          log.scrollTop = log.scrollHeight;
+        },
+      });
+      const said = (reply && reply.text) || out;
+      if (said) {
+        answer.className = 'gpt-line coach';
+        answer.innerHTML = body(said);
+        thread.push({ role: 'coach', text: said });
+        busy = false; field.focus(); log.scrollTop = log.scrollHeight;
+        return;
+      }
+    } catch { /* the book answers instead */ }
+  }
+
+  /* No coach on this view, so the book answers. Every page is called up by words that
+     belong to it alone, which makes the match good when the question is about one of the
+     thirty-five things it knows and a near miss when it is not -- hence the notice at the
+     top of the panel, which says where these answers come from. */
   const text = found ?? NOTHING;
   setTimeout(() => {
     answer.className = 'gpt-line coach' + (found ? '' : ' off');
@@ -377,6 +444,16 @@ export function mountGpt(el) {
   log = root.querySelector('.gpt-log');
   form = root.querySelector('.gpt-ask');
   field = form.querySelector('input');
+  /* Resolved by the time the first question is asked -- and where there is no coach to
+     resolve, the panel says so once rather than letting the rule pages pass themselves
+     off as answers to questions they were not written for. */
+  coach().then(model => {
+    if (model || !log || !log.isConnected || thread.length) return;
+    say('coach', esc('The coach that reads your hand is not available in this view. '
+      + 'What I have here are the rule pages: chows, pungs and kongs, the scoring, waits, '
+      + 'defence, the winds and dragons, the flowers, and a hand worth a given number of faan.'),
+      'off');
+  });
   for (const m of thread) {
     if (m.role === 'you') say('you', esc(m.text));
     else say('coach', m.off ? esc(m.text) : body(m.text), m.off ? 'off' : '');

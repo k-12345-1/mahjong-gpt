@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "4180", "--directory", "preview"],
       "port": 4180
+    },
+    {
+      "name": "mahjong-gpt-alt",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4182", "--directory", "preview"],
+      "port": 4182
     }
   ]
 }

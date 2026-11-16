@@ -14,16 +14,21 @@ mkdir -p preview
   printf '\n</body>\n</html>\n'
 } > preview/index.html
 cp -f dragon.webp preview/dragon.webp
-# the dragon on the hero: a page of its own, carried in a frame
+# The dragon on the hero: a page of its own, carried in a frame. It carries its own sculpt
+# inline as base64 and loads three from the CDN, so nothing else travels with it.
 cp -f dragon.html preview/dragon.html
-# the three.js dragon: its module, the sculpt it deforms, and three itself
-# the sculpt travels as base64 script, because a published artifact serves no .glb
-python3 -I make-model.py dragon.glb > /dev/null
-cp -f gold-dragon-swim.mjs gold-dragon.png preview/
-cp -f dragon-swim.mjs dragon-model.mjs dragon-model-1.mjs dragon-model-2.mjs preview/
-rm -rf preview/vendor; cp -R vendor preview/vendor
 cp -f icon.png preview/icon.png
+# The gold dragon was dropped from the hero (see the comment at the foot of index.html).
+# Its sources stay in the repo; they are not served, and neither are the sculpt modules
+# make-model.py writes, which only that dragon ever imported. Regenerate them with
+#   python3 -I make-model.py dragon.glb
+# Clear anything an older build left behind.
+rm -rf preview/vendor
+rm -f preview/gold-dragon-swim.mjs preview/gold-dragon.png preview/dragon-swim.mjs \
+      preview/dragon-model.mjs preview/dragon-model-1.mjs preview/dragon-model-2.mjs
 # the game is a page of its own, served beside the hero
 rm -rf preview/play
 cp -R play preview/play
-echo "built preview/index.html ($(wc -c < preview/index.html) bytes) + dragon.webp + play/ ($(find play -type f | wc -l | tr -d ' ') files)"
+# the illustrated dragon again, this time the copy the game never asks for
+rm -f preview/play/dragon.png
+echo "built preview/index.html ($(wc -c < preview/index.html) bytes) + dragon.webp + play/ ($(find preview/play -type f | wc -l | tr -d ' ') files), $(du -sh preview | cut -f1) in all"

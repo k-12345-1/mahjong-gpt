@@ -1,5 +1,5 @@
 /* What the coach tells you to throw. Run: node test-coach.mjs */
-import { recommend, handDistance } from './play/coach.mjs';
+import { recommend, handDistance, faanCeiling } from './play/coach.mjs';
 import assert from 'node:assert/strict';
 
 /* 0-8 characters, 9-17 dots, 18-26 bamboo, 27-30 winds (E S W N), 31-33 dragons */
@@ -52,5 +52,43 @@ const complete = [0, 1, 2, 9, 10, 11, 18, 19, 20, 4, 4, 5, 5];
 
 /* An exposed set is three tiles of the hand already made. */
 assert.ok(handDistance([0, 1, 2, 9, 10, 11, 4, 4, 5, 5], 1) <= handDistance([0, 1, 2, 9, 10, 11, 4, 4, 5, 5], 0));
+
+
+/* ---- the faan a hand can still reach -------------------------------------------
+   The melds decide it, because they cannot be taken back. */
+{
+  const chars = [0, 1, 2], dots = [9, 10, 11];
+  const plain = [18, 19, 20, 22, 23, 24, 26, 26, 5];
+
+  /* a run and a second suit face up: no flush, no all pungs, nothing left but a plain
+     hand, which at a three-faan table cannot be declared at all */
+  assert.equal(faanCeiling(plain, [chars, dots]), 1);
+
+  /* one dragon pung is the whole of what such a hand pays -- a faan is a faan, and the
+     faan for a plain hand is not collected on top of it */
+  assert.equal(faanCeiling([...plain, 31, 31], [chars, dots]), 1);
+
+  /* two of them, and it is still a faan short of a three-faan table */
+  assert.equal(faanCeiling([...plain, 31, 31, 32, 32], [chars, dots]), 2);
+
+  /* nothing face up yet: the hand is still free to go anywhere */
+  assert.ok(faanCeiling(plain, []) >= 3, 'a closed hand keeps its routes');
+
+  /* a pung down instead of a run leaves All Pungs alive */
+  assert.ok(faanCeiling(plain, [[18, 18, 18]]) >= 3, 'no run laid down, so all pungs lives');
+
+  /* the coach will not throw the tile that kills the last route to the minimum.
+     One characters run is down, so characters is the only suit a flush can still use;
+     the lone 5 of characters is the hand's only tile in it. */
+  const stuck = [5, 18, 19, 20, 22, 23, 24, 26, 26, 9];
+  const free = recommend(stuck, 1, [], { minFaan: 3, melds: [[0, 1, 2]] });
+  assert.notEqual(free.tile, 5, 'throwing the last character would end the only flush left');
+  assert.equal(free.blocked, false);
+
+  /* and when every route really has shut, it says so instead of picking prettily */
+  const dead = recommend(plain, 2, [], { minFaan: 3, melds: [chars, dots] });
+  assert.equal(dead.blocked, true);
+  assert.match(dead.why, /cannot be declared/);
+}
 
 console.log('coach: all checks passed');

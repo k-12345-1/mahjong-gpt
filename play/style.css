@@ -733,6 +733,10 @@ body.settings-open .practice-match-settings{display:grid;gap:12px}
 #app[data-section=play] .practice-actions .practice-status{
   position:static;width:auto;height:auto;overflow:visible;clip-path:none;
   flex:0 0 100%;text-align:center;line-height:1.5;color:#ffe4ccd6;
+  /* It was hidden from sight before it was shown here, and hidden text was allowed to be
+     any width it liked. Shown, that width is a phone's worth of line running off both
+     edges of the screen -- so it wraps, like every other line on the page. */
+  white-space:normal;max-width:100%;
 }
 #app[data-section=play] .practice-actions .btn{line-height:1}
 

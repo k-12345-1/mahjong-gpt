@@ -1,4 +1,4 @@
-import { discardChoices, fanDirections, handDistance, recommend } from './coach.mjs';
+import { discardChoices, faanCeiling, fanDirections, handDistance, recommend } from './coach.mjs';
 import { clack, meld, say } from './sound.mjs';
 import { endCurtain } from './curtain.mjs';
 import { washTiles } from './shuffle.mjs';
@@ -98,6 +98,31 @@ function draw(p){
   }
   return false;
 }
+/* ---- the table, kept across a reload ------------------------------------------------
+   Saved at the one moment a hand can be picked up again exactly as it was left: your own
+   turn, nothing in the air, no claim waiting on an answer and no timer half run. That is
+   also the moment anyone actually walks away from it. Anywhere else the save is marked
+   as between hands, and coming back keeps the standings and deals a fresh one. */
+const KEPT='mahjong-table-v1';
+function keep(handOver){
+  try{localStorage.setItem(KEPT,JSON.stringify({v:1,handOver:!!handOver,
+    wall,hands,bonuses,melds,rivers,dealer,match,note,coach,
+    completedHands,handDecisions,newTileIndex,canSelfDraw}));}
+  catch{/* no store, and a table is not worth failing over */}
+}
+function restore(){
+  let kept;
+  try{kept=JSON.parse(localStorage.getItem(KEPT)||'null');}catch{return false;}
+  if(!kept||kept.v!==1||!Array.isArray(kept.wall)||!Array.isArray(kept.hands))return false;
+  match=kept.match;dealer=kept.dealer;completedHands=kept.completedHands||[];
+  if(kept.handOver){reset();return true;}
+  ({wall,hands,bonuses,melds,rivers,note,coach,handDecisions,newTileIndex,canSelfDraw}=kept);
+  choice=-1;offer=null;claimNotice='';counting=false;coachOpen=false;analysisCache=undefined;
+  seat=0;phase='player';
+  paint();
+  return true;
+}
+
 function reset(){
   clearTimeout(timer);
   counting=false;
@@ -298,6 +323,8 @@ function finish(message,winner){
      moment a hand ended, which hid everything the table does to close it out. */
   phase='ended';note=message;counting=true;paint();
   if(winner!==undefined)say('Win');
+  /* the hand is spent, but the standings it fed into are not */
+  keep(true);
   /* the table turns itself over and each hand shows what it was worth */
   const counted=()=>{counting=false;paint();};
   try{endCurtain(root,rows).then(counted,err=>{console.error('curtain failed',err);counted();});}
@@ -308,7 +335,10 @@ function opponentDiscard(p){
   const hand=hands[p];
   if(match.level==='advanced'){
     const visible=[...rivers.flat(),...melds.flat(2)];
-    return hand.indexOf(discardChoices(hand,melds[p].length,visible)[0].tile);
+    /* the strong seats play to the table's minimum, not to shape alone -- otherwise they
+       chase hands they could not declare if they finished them */
+    return hand.indexOf(recommend(hand,melds[p].length,visible,
+      {melds:melds[p],seatWind:27+windOf(p),roundWind:27+match.round,minFaan:minFaan()}).tile);
   }
   if(match.level==='beginner'){
     const options=hand.map((_,i)=>i).sort((a,b)=>score(hand,a)-score(hand,b)).slice(0,3);
@@ -321,6 +351,7 @@ function playTurn(p, drawn){
   phase=p===0?'player':'bot';
   if(p===0)newTileIndex=drawn?hands[0].length-1:-1;
   paint();
+  if(p===0)keep(false);
   if(p!==0)timer=setTimeout(()=>{
     /* One seat's turn is one link in a chain of timers: if it throws, nothing schedules the
        next one and the hand stops where it stands with no way back. Whatever went wrong,
@@ -352,6 +383,28 @@ function takeTurn(p){
   if(!draw(p)){finish('The wall is empty. This hand ends in a draw.');return;}
   playTurn(p,true);
 }
+/* ---- the table, in words -----------------------------------------------------------
+   So the coach can be asked about the hand in front of you and not only about mahjong in
+   general. Names, not tile numbers: this is read by something that reads English. Null
+   while no hand is in play, which is the signal to answer about the rules instead. */
+export function tableState(){
+  if(!hands||!hands[0]||!hands[0].length)return null;
+  const name=t=>label(faces[t]);
+  const meldsOf=p=>melds[p].map(m=>m.map(name).join(' ')).join(' / ')||'nothing down';
+  return {
+    yourHand:hands[0].filter(t=>t<34).map(name),
+    yourSetsFaceUp:meldsOf(0),
+    yourFlowers:bonuses[0].map(name).join(', ')||'none',
+    yourSeatWind:winds[windOf(0)],
+    roundWind:winds[match.round],
+    minimumToGoOut:minFaan()?minFaan()+' faan':'none, a chicken hand pays',
+    tilesLeftInWall:wall.filter(t=>t<34).length,
+    whoseTurn:phase==='player'?'yours':'not yours',
+    discardsSoFar:rivers.map((r,p)=>seatName(p)+': '+(r.map(name).join(', ')||'nothing yet')),
+    opponentSetsFaceUp:[1,2,3].map(p=>seatName(p)+': '+meldsOf(p)),
+  };
+}
+
 export function claimOptions(hand, meldCount, n, next, replacementAvailable, worthIt){
   const options=[];
   if(winning([...hand,n],meldCount)&&(!worthIt||worthIt([...hand,n])))options.push({name:'Win',priority:3});
@@ -385,7 +438,7 @@ function playerChoices(){
     /* The hand is read once and the table and the coach panel are both shown that one
        reading, so the ring on a tile and the sentence in the panel cannot disagree. */
     analysisCache={key,choices,pick:recommend(hands[0],melds[0].length,visible,
-      {choices,seatWind:27+windOf(0),roundWind:27+match.round,minFaan:minFaan()})};
+      {choices,melds:melds[0],seatWind:27+windOf(0),roundWind:27+match.round,minFaan:minFaan()})};
   }
   return analysisCache.choices;
 }
@@ -394,11 +447,32 @@ const coachPick=()=>{playerChoices();return analysisCache.pick;};
    nearer ready than it is now, and a kong neither helps nor hurts the shape. */
 function claimAdvice(){
   const current=handDistance(hands[0],melds[0].length);
-  const read=offer.options.map(o=>({o,after:o.name==='Win'?-2:o.name==='Kong'?current:claimDistance(o)}))
+  const need=minFaan();
+  const seat={seatWind:27+windOf(0),roundWind:27+match.round};
+  /* What the hand could still be worth once the call is face up. A set put down cannot be
+     picked up again, so a call that puts the minimum out of reach is not a call at all,
+     whatever it does for the shape. */
+  const ceilingAfter=o=>{
+    if(!o.use)return Infinity;
+    const rest=hands[0].slice();
+    for(const tile of o.use)rest.splice(rest.indexOf(tile),1);
+    return faanCeiling(rest,[...melds[0],[...o.use,offer.n].sort((a,b)=>a-b)],seat);
+  };
+  /* A pung of a dragon, or of your own seat or the round wind, buys a faan outright and
+     cannot be made as a run later. It is worth taking even where it does nothing for the
+     shape, which is the opposite of how a chow is worth taking. */
+  const pays=new Set([31,32,33,27+windOf(0),27+match.round]);
+  const read=offer.options.map(o=>({o,after:o.name==='Win'?-2:o.name==='Kong'?current:claimDistance(o),
+      ceiling:o.name==='Win'?Infinity:ceilingAfter(o),
+      value:o.name==='Pung'&&pays.has(offer.n)?1:0}))
     .filter(x=>x.after!==null&&x.after!==undefined);
-  const best=read.sort((a,b)=>a.after-b.after)[0];
+  const legal=read.filter(x=>!need||x.ceiling>=need);
+  const best=legal.sort((a,b)=>b.value-a.value||a.after-b.after)[0];
   if(best&&best.o.name==='Win')return {take:best.o,why:'the hand is there, so take it'};
+  if(best&&best.value)return {take:best.o,why:'a pung of '+tileName(offer.n)+' is a faan in itself, and it cannot be made as a run later'};
   if(best&&best.after<current)return {take:best.o,why:'it leaves you '+distanceText(best.after)};
+  if(need&&!legal.length&&read.length)
+    return {take:null,why:'every call here would put '+need+' faan out of reach, and a hand that cannot be declared is not worth opening'};
   return {take:null,why:'no call here brings you nearer ready, and passing keeps your hand concealed'};
 }
 function reviewContent(){
@@ -652,7 +726,7 @@ function moveTile(from,to){
 export function mountPractice(el, onPlayerDiscard){
   root=el;
   onDiscard=onPlayerDiscard;
-  if(!wall)reset();
+  if(!wall&&!restore())reset();
   const tileButton = target => target.closest('[data-practice="tile"]');
   let dragIndex = -1;
   let dropTarget, dropClass, dragged, ghost;

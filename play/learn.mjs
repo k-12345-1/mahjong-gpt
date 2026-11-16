@@ -626,8 +626,20 @@ function choose(i) {
 /* `replay` is for the two ways in that mean to see the introduction: mounting the school
    and starting it again. Walking back into lesson one lands on its task, with the tour as
    the step behind it. */
+/* Where the school was left, kept across a reload as well as across a step out to the
+   table. One number: the lesson, and nothing about how it was answered. */
+const KEPT = 'mahjong-school';
+function remember(n) { try { localStorage.setItem(KEPT, String(n)); } catch { /* no store */ } }
+function recall() {
+  try {
+    const n = Number(localStorage.getItem(KEPT));
+    return Number.isInteger(n) && n > 0 && n < LESSONS.length ? n : 0;
+  } catch { return 0; }
+}
+
 function go(n, replay) {
   clock.forEach(clearTimeout); clock = [];
+  remember(n);
   step = n; picked = []; placed = {}; held = -1; landed = -1; done = false; said = '';
   staged = !replay || !LESSONS[n] || !LESSONS[n].stage;
   report({ step, total: LESSONS.length, back: canBack() });
@@ -657,6 +669,9 @@ export function learnReset() { go(0, true); }
 export function mountLearn(el, onMove) {
   root = el;
   report = onMove || (() => {});
+  /* Nought means the school has not been walked this session -- which is also what a
+     fresh page looks like, so that is the moment to ask the store where we got to. */
+  if (step === 0) step = recall();
   go(step, step === 0);
 
   /* Dragging is done by hand rather than by the browser's own drag and drop, which does
