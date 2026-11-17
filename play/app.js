@@ -7,34 +7,6 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const motion = (target, frames, options) => {
   if (!reduce.matches && target) window.Motion?.animate(target, frames, options);
 };
-const lessons = [
-  {title:'Meet the tiles', intro:'There are three numbered suits: bamboo, circles, and characters. Winds and dragons are honor tiles.', task:'Which of these is an honor tile?', row:['3b','7d','N','2c'], answer:[2], note:'North is a wind, so it belongs to the honor tiles.'},
-  {title:'Build a chow', intro:'A chow is three consecutive numbers in the same suit.', task:'Pick the three tiles that form a chow.', row:['2b','3b','4d','4b','7d'], answer:[0,1,3], note:'2, 3, and 4 Bamboo form a run in the same suit.'},
-  {title:'Build a pung', intro:'A pung is three identical tiles. Honor tiles can form pungs, too.', task:'Pick the three matching tiles.', row:['E','7d','E','2c','E'], answer:[0,2,4], note:'Three East winds make a pung.'},
-  {title:'Find the pair', intro:'A standard winning shape has four sets and a pair. Scoring requirements depend on the table rules.', task:'Pick the two tiles that can serve as a pair.', row:['2b','7d','8b','7d','N'], answer:[1,3], note:'The two 7 Circles are identical, so they form a pair.'},
-];
-let lesson = 0, selected = [], feedback = '', completed = new Set();
-const messages = [];
-let attach = false;
-let lastDiscard = '';
-const honors = {N:['北','North'],E:['東','East'],S:['南','South'],W:['西','West'],R:['中','Red dragon']};
-const chinese = '一二三四五六七八九';
-function describe(code) {
-  if (honors[code]) return honors[code][1];
-  return code[0] + ' ' + ({b:'Bamboo',d:'Circles',c:'Characters'}[code[1]]);
-}
-function tile(code, i, active = false, mini = false) {
-  const [n, suit] = code;
-  const label = describe(code);
-  const mark = honors[code]?.[0] ?? (suit === 'c' ? chinese[n-1] : n);
-  const name = honors[code] ? (code === 'R' ? 'DRAGON' : 'WIND') : ({b:'BAM',d:'DOT',c:'萬'}[suit]);
-  const classes = 'tile ' + ((suit==='c'||code==='R')?'red':suit==='d'?'blue':'') + (active?' active':'') + (mini?' mini':'');
-  const pips = (suit === 'b' || suit === 'd') && !honors[code];
-  const art = pips ? '<span class="pips '+suit+' pips-'+n+'" aria-hidden="true">'+'<i></i>'.repeat(Number(n))+'</span>' : '<span class="mark">'+mark+'</span>';
-  const face = '<span class="tile-face">'+art+'<small>'+name+'</small></span>';
-  return i === null ? '<span class="'+classes+'" role="img" aria-label="'+label+'">'+face+'</span>'
-    : '<button class="'+classes+'" type="button" data-tile="'+i+'" aria-label="'+label+'" aria-pressed="'+active+'">'+face+'</button>';
-}
 function route() {
   const key = location.hash.slice(1);
   return ['play','instructions','gpt'].includes(key) ? key : 'play';
@@ -59,17 +31,9 @@ function shell(id, body) {
 }
 function play() {
   shell('play','<div id="practice-game"></div>');
-  mountPractice(document.querySelector('#practice-game'), name => { lastDiscard=name; });
+  mountPractice(document.querySelector('#practice-game'));
 }
 /* Learn to play is the school: one lesson at a time, each ending in something to do. */
-function blankScreen(id) {
-  app.dataset.section = id;
-  app.innerHTML = '';
-  document.querySelectorAll('nav a').forEach(link => {
-    if (link.hash === '#' + id) link.setAttribute('aria-current', 'page');
-    else link.removeAttribute('aria-current');
-  });
-}
 function instructions() {
   app.dataset.section = 'instructions';
   app.innerHTML = '<section class="learn"></section>';
@@ -116,28 +80,6 @@ function render(enter=false) {
   }
   if (enter) motion(app.querySelector('.content'),{opacity:[.1,1],y:[10,0]},{duration:.28});
 }
-app.addEventListener('click', e=>{
-  const control=e.target.closest('button, [data-action]');
-  if (!control) return;
-  const {tile: index, action, lesson: target}=control.dataset;
-  if (index!==undefined) {
-    const i=Number(index);
-    selected=selected.includes(i)?selected.filter(x=>x!==i):[...selected,i];feedback='';
-    render(); const button=app.querySelector('[data-tile="'+i+'"]'); button?.focus();
-    motion(button,{scale:[.94,1]},{duration:.18}); return;
-  }
-  if (target!==undefined||action==='next') {
-    lesson=target!==undefined?Number(target):lesson+1; selected=[]; feedback=''; render(true); app.querySelector('[data-lesson="'+lesson+'"]').focus(); return;
-  }
-  if (action==='check') {
-    const l=lessons[lesson];
-    const correct=selected.length===l.answer.length&&l.answer.every(i=>selected.includes(i));
-    feedback=correct?'Correct. '+l.note:'Try again. Read the prompt and compare the suit and number on each tile.';
-    if(correct)completed.add(lesson);
-    render(); motion(app.querySelector('.result'),{opacity:[0,1],y:[5,0]},{duration:.2}); return;
-  }
-});
-app.addEventListener('change',e=>{if(e.target.id==='attach')attach=e.target.checked;});
 /* No entrance animation when moving between sections from the menu: the content was
    fading up from a tenth of its opacity every time, which read as a flicker. */
 addEventListener('hashchange',()=>{render();scrollTo(0,0);});

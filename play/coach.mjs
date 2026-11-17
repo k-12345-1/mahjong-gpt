@@ -49,7 +49,7 @@ export function discardChoices(hand,exposed,publicTiles){
   });
   return choices.sort((a,b)=>a.distance-b.distance||b.copies-a.copies||a.tile-b.tile);
 }
-export function fanDirections(hand,melds,seatWind=27,roundWind=27){
+function fanDirections(hand,melds,seatWind=27,roundWind=27){
   const tiles=[...hand,...melds.flat()];
   const counts=Array(34).fill(0);
   for(const tile of tiles)counts[tile]++;
@@ -124,7 +124,7 @@ const FLUSH_TILES = 7, PUNG_PAIRS = 3;
 /* the thresholds are said in words, the way the rest of the app counts, and stay in step
    with the numbers above rather than being written out twice */
 const WORDS = { 3: 'Three', 7: 'Seven' };
-export const SUITS = ['characters', 'dots', 'bamboo'];
+const SUITS = ['characters', 'dots', 'bamboo'];
 
 export function direction(hand, melds = [], opts = {}) {
   const { seatWind = 27, roundWind = 27 } = opts;

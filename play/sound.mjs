@@ -29,8 +29,6 @@ export function setVolume(value) {
   level = Math.max(0, Math.min(2, Math.round(Number(value) || 0)));
   try { localStorage.setItem('mahjong-volume', String(level)); } catch { /* no store */ }
 }
-export function isMuted() { return level === 0; }
-export function setMuted(value) { setVolume(value ? 0 : 2); }
 
 /* Browsers refuse to start audio before the page has been touched, so the context is made
    on the first sound and the early ones are simply dropped. A context can also be closed

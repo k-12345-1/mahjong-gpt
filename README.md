@@ -22,11 +22,10 @@ a Claude Artifact, which supplies that skeleton itself) and copies what the site
 actually serves into `preview/`. That directory is build output and is not
 committed.
 
-What it leaves out is as deliberate as what it puts in: the gold dragon was
-dropped from the hero, so its module, its illustration, the sculpt modules
-`make-model.py` writes and the vendored copy of three.js are all still in the
-repo and none of them are served. They were twenty of the twenty-five megabytes
-the build used to weigh.
+What it leaves out is as deliberate as what it puts in: the browser is served
+the rendered tiles, never the SVGs they were drawn from, and never the
+illustrated dragon the game's banner replaced with `dragon.webp`. Both stay in
+the repo as sources.
 
 ## Layout
 
@@ -39,10 +38,8 @@ the build used to weigh.
 | `play/practice.mjs` | the table: the wall, the deal, the turn, scoring |
 | `play/gpt.mjs` | the chat panel |
 | `play/style.css` | all of the game's layout and type |
-| `play/tile-art/` | the tiles, drawn as SVG and rendered to webp |
-| `dragon.glb` | the sculpt the dragon's mesh is deformed from |
-| `make-model.py` | turns that sculpt into base64 modules — for the dropped gold dragon, not served |
-| `vendor/three/` | three.js, vendored for the dropped gold dragon — not served |
+| `play/tile-art/` | the tiles: `fronts/` drawn as SVG, `rendered-fronts/` the webps actually served |
+| `dragon.glb` | the sculpt `dragon.html` carries inline — the source, not served |
 
 ## Tests
 

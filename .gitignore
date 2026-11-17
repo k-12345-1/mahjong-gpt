@@ -1,9 +1,5 @@
 # Build output. ./build.sh writes it from the sources beside it.
 preview/
 
-# Generated from dragon.glb by make-model.py, which build.sh runs.
-dragon-model-1.mjs
-dragon-model-2.mjs
-
 .DS_Store
 .claude/settings.local.json

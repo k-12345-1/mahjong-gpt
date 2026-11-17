@@ -3,7 +3,8 @@
 # The published artifact supplies this skeleton itself.
 set -e
 cd "$(dirname "$0")"
-mkdir -p preview
+rm -rf preview
+mkdir preview
 {
   printf '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
   printf '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
@@ -13,22 +14,15 @@ mkdir -p preview
   cat index.html
   printf '\n</body>\n</html>\n'
 } > preview/index.html
-cp -f dragon.webp preview/dragon.webp
+cp -f dragon.webp icon.png preview/
 # The dragon on the hero: a page of its own, carried in a frame. It carries its own sculpt
 # inline as base64 and loads three from the CDN, so nothing else travels with it.
 cp -f dragon.html preview/dragon.html
-cp -f icon.png preview/icon.png
-# The gold dragon was dropped from the hero (see the comment at the foot of index.html).
-# Its sources stay in the repo; they are not served, and neither are the sculpt modules
-# make-model.py writes, which only that dragon ever imported. Regenerate them with
-#   python3 -I make-model.py dragon.glb
-# Clear anything an older build left behind.
-rm -rf preview/vendor
-rm -f preview/gold-dragon-swim.mjs preview/gold-dragon.png preview/dragon-swim.mjs \
-      preview/dragon-model.mjs preview/dragon-model-1.mjs preview/dragon-model-2.mjs
 # the game is a page of its own, served beside the hero
-rm -rf preview/play
 cp -R play preview/play
-# the illustrated dragon again, this time the copy the game never asks for
+# What the browser asks for is the rendered tile, never the drawing it came from, and never
+# the illustrated dragon -- the game's banner uses dragon.webp beside the hero's. They stay
+# in the repo as sources and off the wire.
+rm -rf preview/play/tile-art/fronts preview/play/tile-art/shared
 rm -f preview/play/dragon.png
 echo "built preview/index.html ($(wc -c < preview/index.html) bytes) + dragon.webp + play/ ($(find preview/play -type f | wc -l | tr -d ' ') files), $(du -sh preview | cut -f1) in all"

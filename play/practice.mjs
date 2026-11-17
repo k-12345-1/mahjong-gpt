@@ -1,4 +1,4 @@
-import { discardChoices, faanCeiling, fanDirections, handDistance, recommend } from './coach.mjs';
+import { discardChoices, faanCeiling, handDistance, recommend } from './coach.mjs';
 import { clack, meld, say } from './sound.mjs';
 import { endCurtain } from './curtain.mjs';
 import { washTiles } from './shuffle.mjs';
@@ -59,7 +59,7 @@ const suggestion = hand => hand.reduce((best,_,i)=>score(hand,i)<score(hand,best
    so the dealer is always East and every seat takes East in turn. */
 let dealer=0;
 const windOf=p=>(p-dealer+4)%4;
-let wall,hands,bonuses,melds,rivers,seat,phase,choice,offer,timer,note,coach=true,root,onDiscard,canSelfDraw,claimNotice,analysisCache,newTileIndex,lastDiscard;
+let wall,hands,bonuses,melds,rivers,seat,phase,choice,offer,timer,note,coach=true,root,canSelfDraw,claimNotice,analysisCache,newTileIndex,lastDiscard;
 const levels={
   beginner:{label:'Beginner',think:1000,review:2000},
   intermediate:{label:'Intermediate',think:700,review:1400},
@@ -146,7 +146,6 @@ function reset(){
   if(dealer===0)sortPlayer();else hands[0].sort((a,b)=>a-b);
   newTileIndex=-1;lastDiscard=null;
   analysisCache=undefined;
-  onDiscard?.('');
   note=dealer===0?'Select a tile to discard. The coach can help you compare options.'
     :winds[windOf(dealer)]+' deals and opens the hand.';
   /* The dealer plays the first tile, whoever it is this hand. */
@@ -413,7 +412,7 @@ export function tableState(){
   };
 }
 
-export function claimOptions(hand, meldCount, n, next, replacementAvailable, worthIt){
+function claimOptions(hand, meldCount, n, next, replacementAvailable, worthIt){
   const options=[];
   if(winning([...hand,n],meldCount)&&(!worthIt||worthIt([...hand,n])))options.push({name:'Win',priority:3});
   if(meldCount>=4)return options;
@@ -433,7 +432,7 @@ export function claimOptions(hand, meldCount, n, next, replacementAvailable, wor
   return options;
 }
 /* what a claim is called, with any run stripped off the end */
-export const callOf=o=>o.name.startsWith('Chow')?'Chow':o.name;
+const callOf=o=>o.name.startsWith('Chow')?'Chow':o.name;
 const RIVER_PLACES = 4;
 const tileName = tile => label(faces[tile]);
 const distanceText = distance => distance===0?'one tile from a complete hand':
@@ -517,7 +516,6 @@ function claimDistance(opt){
 function discard(p,i){
   const hand=hands[p], n=hand[i];
   if(p===0){
-    onDiscard?.(label(faces[n]));
     const options=playerChoices();
     const best=coachPick(), played=options.find(x=>x.tile===n);
     note='You discarded '+tileName(n)+', leaving '+played.copies+' unseen improving copies.';
@@ -746,9 +744,8 @@ function moveTile(from,to){
   root.querySelector('[data-practice="tile"][data-i="'+to+'"]')?.focus();
 }
 
-export function mountPractice(el, onPlayerDiscard){
+export function mountPractice(el){
   root=el;
-  onDiscard=onPlayerDiscard;
   if(!wall&&!restore())reset();
   const tileButton = target => target.closest('[data-practice="tile"]');
   let dragIndex = -1;
