@@ -343,10 +343,10 @@ function type(node, text) {
    Asked for once and remembered. Null everywhere the page is served without it -- on a
    plain web server, or to a viewer who says no -- and then the book below answers
    instead, which is the whole reason the book is still here. */
-let sampler, asked;
+let asked;
 function coach() {
   if (!asked) asked = window.claude && window.claude.use
-    ? window.claude.use('sample').then(s => (sampler = s)).catch(() => null)
+    ? window.claude.use('sample').catch(() => null)
     : Promise.resolve(null);
   return asked;
 }
@@ -444,16 +444,6 @@ export function mountGpt(el) {
   log = root.querySelector('.gpt-log');
   form = root.querySelector('.gpt-ask');
   field = form.querySelector('input');
-  /* Resolved by the time the first question is asked -- and where there is no coach to
-     resolve, the panel says so once rather than letting the rule pages pass themselves
-     off as answers to questions they were not written for. */
-  coach().then(model => {
-    if (model || !log || !log.isConnected || thread.length) return;
-    say('coach', esc('The coach that reads your hand is not available in this view. '
-      + 'What I have here are the rule pages: chows, pungs and kongs, the scoring, waits, '
-      + 'defence, the winds and dragons, the flowers, and a hand worth a given number of faan.'),
-      'off');
-  });
   for (const m of thread) {
     if (m.role === 'you') say('you', esc(m.text));
     else say('coach', m.off ? esc(m.text) : body(m.text), m.off ? 'off' : '');
