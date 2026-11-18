@@ -440,13 +440,20 @@ body[data-screen=play] #open-menu{
 /* The layout caps itself at 720px for the two-column version with the coach beside the
    table; on this screen there is only the table, so its own width rule is the only cap. */
 #app[data-section=play] .practice-layout{max-width:none}
-/* The table, the coach's line and the bar are one stack, centred in the window together.
-   The bar used to hang off the table's bottom edge taking no room of its own, which meant
-   it had to fit in half of what was left over -- and a claim's two buttons did not, so
-   Chow and Pass ran off the foot of the screen. 190px is what the line and the bar take
-   between them, counted once because they are inside what gets centred. */
-#app[data-section=play] .practice-layout>section{position:relative;width:100%}
-#app[data-section=play]{--table-w:min(100%,900px,calc(100dvh - 190px))}
+/* The table is the screen, so it sits in the middle of the window -- not the stack it is
+   at the top of. The coach's line and the bar under it take --under between them, and the
+   same again is held above the table, which is what puts the table's own middle on the
+   window's middle at any size. The table is capped by what is left over, and the 20px is
+   the breath under the last line. Centring the stack instead left the table sitting a
+   whole bar's half-height high, which is what it looked like. */
+#app[data-section=play] .practice-layout>section{position:relative;width:100%;padding-top:var(--lift)}
+#app[data-section=play]{
+  /* 13 + 59 + 12 + 42: the line's gap and height, the bar's gap and height */
+  --under:126px;
+  /* what is held above the table to match it -- dropped where there is no height to spare */
+  --lift:var(--under);
+  --table-w:min(100%,900px,calc(100dvh - var(--under) - var(--lift) - 20px));
+}
 #app[data-section=play] .practice-actions{
   position:static;
   /* it carried a 1px rule along its top and 11px of padding under it, from when it was a
@@ -454,7 +461,7 @@ body[data-screen=play] #open-menu{
   border:0;padding:0;
   /* the room a claim's buttons take, kept whether or not there are any, so the table does
      not shift up and down the window as the hand goes on */
-  min-height:70px;
+  min-height:42px;
   margin:12px auto 0;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;
   width:max-content;max-width:100%;
 }
@@ -625,7 +632,7 @@ body.settings-open .practice-match-settings{display:grid;gap:12px}
    drawn tile to point at, and a table waiting for you looks exactly like a stopped one. */
 #app[data-section=play] .practice-actions .practice-status{
   position:static;width:auto;height:auto;overflow:visible;clip-path:none;
-  flex:0 0 100%;text-align:center;line-height:1.5;color:#fff1e2;
+  flex:0 1 auto;text-align:center;line-height:1.5;color:#fff1e2;
   /* It was hidden from sight before it was shown here, and hidden text was allowed to be
      any width it liked. Shown, that width is a phone's worth of line running off both
      edges of the screen -- so it wraps, like every other line on the page. */
@@ -773,8 +780,18 @@ body.settings-open .practice-match-settings{display:grid;gap:12px}
 @media(max-width:1000px){
   .gpt-log{padding-top:calc(max(2.5vw, env(safe-area-inset-top,0px)) + 58px)}
 }
+/* The bar is one row: what just happened, and the two buttons that answer it when a hand
+   is asking. On a phone the line is long enough to take a row of its own and the buttons
+   drop below it, so the room held for them is the room they take there. */
+@media(max-width:700px){
+  #app[data-section=play]{--under:173px}
+  #app[data-section=play] .practice-actions{min-height:89px}
+}
+
 @media(max-height:560px){
-  #app[data-section=play]{--table-w:min(100%,980px,calc(100dvh - 104px))}
+  /* No height to balance it with: the table takes what there is and sits where it lands,
+     which on a screen this short is worth more than having it centred. */
+  #app[data-section=play]{--lift:0px}
 }
 /* The gap between hand tiles has a floor in pixels, so the ring around a tile cannot
    touch its neighbours on a big table. On a small one those floors add up to more than
