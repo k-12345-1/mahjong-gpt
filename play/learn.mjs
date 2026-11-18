@@ -216,20 +216,6 @@ const LESSONS = [
     },
   },
   {
-    title: 'Eyes',
-    intro: true,
-    wide: true,
-    say: 'Four sets are not a hand on their own. You need a pair as well \u2014 two of the identical tile, called the eyes.\n[[green-dragon green-dragon]]\nThey stay in your hand to the end. You cannot call for a pair mid-hand the way you can call a pung, but the tile that completes your eyes and wins you the hand may come from any player at the table.',
-    task: {
-      kind: 'choice',
-      prompt: 'You need one more tile for your pair, and it wins. The player opposite discards it. May you take it?',
-      options: ['Yes \u2014 the winning tile can come from anyone', 'No \u2014 only the player on your left', 'Only if it also completes a set'],
-      answer: 0,
-      note: 'The tile that wins can be claimed from any seat. Mid-hand it would be different: a pair on its own is not something you can call for.',
-      wrong: 'Think about which claims are open to the whole table, and which are not.',
-    },
-  },
-  {
     title: 'Sitting down',
     intro: true,
     wide: true,

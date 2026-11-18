@@ -1,5 +1,5 @@
 import { discardChoices, faanCeiling, handDistance, recommend } from './coach.mjs';
-import { clack, meld, say } from './sound.mjs';
+import { clack, meld, say, wash } from './sound.mjs';
 import { endCurtain } from './curtain.mjs';
 import { washTiles } from './shuffle.mjs';
 /* While the table is counting the hands out, the way on is not offered yet: the
@@ -59,7 +59,7 @@ const suggestion = hand => hand.reduce((best,_,i)=>score(hand,i)<score(hand,best
    so the dealer is always East and every seat takes East in turn. */
 let dealer=0;
 const windOf=p=>(p-dealer+4)%4;
-let wall,hands,bonuses,melds,rivers,seat,phase,choice,offer,timer,note,coach=true,root,canSelfDraw,claimNotice,analysisCache,newTileIndex,lastDiscard;
+let wall,hands,bonuses,melds,rivers,seat,phase,choice,offer,timer,note,coach=true,root,canSelfDraw,claimNotice,callWord,callAt,analysisCache,newTileIndex,lastDiscard;
 const levels={
   beginner:{label:'Beginner',think:1000,review:2000},
   intermediate:{label:'Intermediate',think:700,review:1400},
@@ -122,7 +122,7 @@ function restore(){
   match=kept.match;dealer=kept.dealer;completedHands=kept.completedHands||[];
   if(kept.handOver){reset();return true;}
   ({wall,hands,bonuses,melds,rivers,note,coach,handDecisions,newTileIndex,canSelfDraw}=kept);
-  choice=-1;offer=null;claimNotice='';counting=false;coachOpen=false;analysisCache=undefined;
+  choice=-1;offer=null;claimNotice='';callWord='';counting=false;coachOpen=false;analysisCache=undefined;
   seat=0;phase='player';
   paint();
   return true;
@@ -141,7 +141,7 @@ function reset(){
   /* The coach is the player's switch, not the level's and not the hand's: it used to be
      set here from the difficulty, which turned it off again at every new deal for anyone
      playing above beginner who had just turned it on. */
-  choice=-1;offer=null;claimNotice='';
+  choice=-1;offer=null;claimNotice='';callWord='';
   draw(dealer);
   if(dealer===0)sortPlayer();else hands[0].sort((a,b)=>a-b);
   newTileIndex=-1;lastDiscard=null;
@@ -471,15 +471,20 @@ function claimAdvice(){
   const pays=new Set([31,32,33,27+windOf(0),27+match.round]);
   const read=offer.options.map(o=>({o,after:o.name==='Win'?-2:o.name==='Kong'?current:claimDistance(o),
       ceiling:o.name==='Win'?Infinity:ceilingAfter(o),
-      value:o.name==='Pung'&&pays.has(offer.n)?1:0}))
+      value:(o.name==='Pung'||o.name==='Kong')&&pays.has(offer.n)?1:0}))
     .filter(x=>x.after!==null&&x.after!==undefined);
   const legal=read.filter(x=>!need||x.ceiling>=need);
   const best=legal.sort((a,b)=>b.value-a.value||a.after-b.after)[0];
   if(best&&best.o.name==='Win')return {take:best.o,why:'the hand is there, so take it'};
-  if(best&&best.value)return {take:best.o,why:'a pung of '+tileName(offer.n)+' is a faan in itself, and it cannot be made as a run later'};
+  if(best&&best.value)return {take:best.o,why:'a '+callOf(best.o).toLowerCase()+' of '+tileName(offer.n)+' is a faan in itself, and it cannot be made as a run later'};
   if(best&&best.after<current)return {take:best.o,why:'it leaves you '+distanceText(best.after)};
+  /* Nothing legal to call. Whether the call is what shuts the door depends on whether the
+     door was open to begin with: a hand that has already run out of routes is not being
+     kept alive by passing, and saying so was telling you the opposite. */
   if(need&&!legal.length&&read.length)
-    return {take:null,why:'every call here would put '+need+' faan out of reach, and a hand that cannot be declared is not worth opening'};
+    return {take:null,why:faanCeiling(hands[0],melds[0],seat)>=need
+      ?'every call here would put '+need+' faan out of reach, and a hand that cannot be declared is not worth opening'
+      :'this hand can no longer reach '+need+' faan, whatever you do with this tile -- play it out safely'};
   return {take:null,why:'no call here brings you nearer ready, and passing keeps your hand concealed'};
 }
 function reviewContent(){
@@ -533,7 +538,7 @@ function discard(p,i){
   hand.splice(i,1);rivers[p].push(n);clack();
   if(p===0)newTileIndex=-1;
   lastDiscard={p,n,index:rivers[p].length-1};
-  claimNotice='';
+  claimNotice='';callWord='';
   resolveDiscard(p,n);
 }
 function resolveDiscard(p,n,proceed=false){
@@ -576,6 +581,7 @@ function resolveClaim(p,n,opt){
   /* the call is sounded and spoken, whoever made it */
   meld();say(callOf(opt));
   claimNotice=who+' called '+callOf(opt)+' on '+label(faces[n])+'.';
+  callWord=callOf(opt);callAt=Date.now();
   if(opt.name==='Kong')takeTurn(player);
   else playTurn(player,false);
 }
@@ -587,6 +593,16 @@ function claim(i){
   const impact=after===null?'':after<before?' It moved you closer to ready.':after===before?' It kept the same distance to ready.':' It left you farther from ready.';
   handDecisions.push({kind:'call',efficient:opt.name==='Win'||(after!==null&&after<before),text:'Called '+callOf(opt)+' on '+tileName(n)+'.'+impact});
   resolveClaim(p,n,opt);
+}
+/* The call, said on the table for a moment. The board is redrawn whenever anything on it
+   moves -- picking a tile up does it -- so the word is handed the time it has already been
+   up as a negative delay, and carries on from there instead of starting over and blinking.
+   CALL_MS is the whole of the animation; past it there is nothing left to draw. */
+const CALL_MS=1200;
+function callOut(){
+  const been=Date.now()-callAt;
+  if(!callWord||been>=CALL_MS)return '';
+  return '<div class="practice-call" aria-hidden="true" style="animation-delay:'+(-been)+'ms">'+callWord+'</div>';
 }
 function row(list){return list.map(n=>img(faces[n])).join('');}
 function seatHTML(p){
@@ -675,7 +691,7 @@ function paint(){
   const priorRivers = [...root.querySelectorAll('.practice-river')].map(river => ({
     count: river.childElementCount, top: river.scrollTop,
   }));
-  root.innerHTML='<div class="practice-layout"><section>'+matchPanel()+'<div class="practice-board" aria-label="Overhead mahjong table">'+hands.map((_,p)=>seatHTML(p)).join('')+
+  root.innerHTML='<div class="practice-layout"><section>'+matchPanel()+'<div class="practice-board" aria-label="Overhead mahjong table">'+callOut()+hands.map((_,p)=>seatHTML(p)).join('')+
     '<div class="practice-center">'+rivers.map((list,p)=>{
       /* A seat shows four discards at a time, in four fixed places. The fifth takes the
          place of the oldest, the sixth the place of the one after it, and so on, so a pile
@@ -859,6 +875,7 @@ export function mountPractice(el){
         if(phase==='ended'&&match.winner===null&&!washing){
           endDrag();washing=true;
           const deal=()=>{washing=false;dealer=match.nextDealer;reset();paint();};
+          wash(WASH_MS);
           washTiles(root&&root.querySelector('.practice-board'),WASH_MS).then(deal,deal);
         }
         break;

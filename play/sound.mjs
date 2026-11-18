@@ -161,6 +161,20 @@ export function say(word) {
   } catch { /* no voice this time */ }
 }
 
+/* Washing the tiles between hands: the same knock, many of them, loosely spaced, which is
+   what a table full of tiles being pushed around actually sounds like. It stops itself, so
+   nothing has to be cancelled if the wash is cut short. */
+export function wash(ms = 5000) {
+  if (!level) return;
+  const until = Date.now() + ms;
+  const again = () => {
+    if (Date.now() >= until) return;
+    clack(0.35 + Math.random() * 0.5);
+    setTimeout(again, 40 + Math.random() * 110);
+  };
+  again();
+}
+
 /* A set going down is three tiles laid in quick succession, not one louder knock. */
 export function meld() {
   if (MELD_SILENT) return;

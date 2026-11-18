@@ -167,7 +167,10 @@ export function recommend(hand, exposed, publicTiles, opts = {}) {
   const gone = Array(34).fill(0);
   for (const tile of publicTiles) if (tile < 34) gone[tile]++;
 
-  const { dominant, offSuit } = fanDirections(hand, [], seatWind, roundWind);
+  /* Melds count. They were left out here, so a hand with a bamboo chow and a dragon pung
+     face up was read as whatever its concealed tiles happened to be most of -- and the
+     cost below then protected that suit and threw the tiles the melds were pointing at. */
+  const { dominant, offSuit } = fanDirections(hand, melds, seatWind, roundWind);
   const pays = new Set([...DRAGONS, seatWind, roundWind]);
   const clean = offSuit <= 4;          /* close enough to a flush to be worth steering to */
   const cost = tile => !minFaan ? 0

@@ -143,4 +143,17 @@ assert.ok(handDistance([0, 1, 2, 9, 10, 11, 4, 4, 5, 5], 1) <= handDistance([0, 
   assert.match(dead.why, /cannot be declared/);
 }
 
+/* The suit the hand is collecting is read off the table as well as off the hand. A bamboo
+   chow and a red dragon pung are face up, so the hand is going to bamboo and honours --
+   even though its concealed tiles are mostly characters. It used to count only what was
+   still in hand, call characters the suit it was collecting, protect them, and throw the
+   lone west: the one tile a half flush in bamboo would have kept. */
+{
+  const hand = [5, 8, 10, 21, 21, 28, 32];
+  const melds = [[31, 31, 31], [22, 23, 24]];
+  const pick = recommend(hand, melds.length, [], { minFaan: 3, melds });
+  assert.ok(pick.tile < 9, 'a character goes, not the wind the bamboo hand can still use');
+  assert.notEqual(pick.tile, 28, 'the lone west is faan this hand can still use');
+}
+
 console.log('coach: all checks passed');

@@ -6,9 +6,10 @@
   --display-font:'Instrument Serif',Georgia,'Noto Serif CJK HK',serif;
   --mono-font:'JetBrains Mono',ui-monospace,monospace;
 }
-/* The same ground as the front page, grain and all: the gradient covers so narrow a
-   range of red that eight-bit colour bands it, and the grain dithers those away. */
-:root{--red:#9d100a;--dark:#700e0b;--grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23g)' opacity='.055'/></svg>");--ground:var(--grain) repeat,radial-gradient(118% 92% at 50% 44%,#9c0400 0%,#9c0400 34%,#6e0200 100%);--cream:#fff7e8;--paper:#f4e9d7;--ink:#2c201c;--line:#ddc9b3;--muted:#6e5d54}
+/* The same ground as the front page, grain and all: one flat lacquer, so the foot of a
+   screen is the same red as its middle, with the grain over it to keep it from reading
+   as a painted panel. */
+:root{--red:#9d100a;--dark:#700e0b;--grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23g)' opacity='.055'/></svg>");--ground:var(--grain) repeat,#9c0400;--cream:#fff7e8;--paper:#f4e9d7;--ink:#2c201c;--line:#ddc9b3;--muted:#6e5d54}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.4 var(--display-font)}button,input{font:inherit}button,a,input{touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default;opacity:.5}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #ce8a3c;outline-offset:4px}
 header{background:var(--red);color:var(--cream);display:flex;justify-content:space-between;align-items:center;padding:0 5vw;min-height:70px;border-bottom:1px solid #ffffff35;gap:16px}.brand{font:20px var(--display-font);white-space:nowrap;letter-spacing:.02em}.brand b{display:inline-grid;place-items:center;border:1px solid #ffffff72;width:31px;height:34px;margin-right:7px;font-size:19px}nav{display:flex;gap:26px}nav a{padding:23px 2px;color:#ffe4d7;border-bottom:2px solid transparent}nav a[aria-current]{color:#fff;border-color:#fff}.edition,.eyebrow,footer{font:11px var(--mono-font);letter-spacing:.15em;text-transform:uppercase}.edition i{display:inline-block;width:4px;height:4px;background:#efad7c;border-radius:50%;margin:0 6px}
 .hero{background:var(--red);color:var(--cream);position:relative;overflow:hidden}.wrap{width:min(1200px,90vw);margin:auto}.hero .wrap{position:relative;padding:30px 0 39px;z-index:1}.hero img{position:absolute;width:clamp(220px,31vw,430px);right:5vw;top:-75px;opacity:.27;transform:rotate(-24deg);pointer-events:none}.eyebrow{display:block;color:inherit}.hero h1{font:clamp(55px,10vw,130px)/.92 var(--display-font);letter-spacing:-.075em;margin:10px 0 13px}.hero p{margin:0;color:#ffe0cb;max-width:350px}.content{padding:29px 0 42px}.columns{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(245px,1fr);gap:18px;align-items:start}.btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 13px;background:var(--red);color:var(--cream);border:1px solid var(--red);border-radius:5px}.btn.ghost{background:transparent;color:var(--dark);border-color:var(--line)}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.table{background:#751510;color:#fff3df;border-radius:7px;padding:12px;position:relative}.seat{font:10px var(--mono-font);letter-spacing:.12em}.seat.top{grid-column:2}.discards{min-width:0}.discards .tiles{justify-content:center;margin:7px 0}.tiles{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.rack{margin:14px 0 11px;padding-bottom:5px}.tile{border:1px solid #c8ac8e;border-bottom:4px solid #c99d6d;border-radius:5px;background:#fff9eb;color:#325448;display:inline-grid;place-items:center;min-width:32px;width:clamp(31px,4.1vw,48px);height:clamp(44px,5.6vw,62px);padding:2px;flex-shrink:0;box-shadow:0 2px 0 #5f2a1d20}.tile.red{color:#a11c14}.tile small{font:8px var(--mono-font);letter-spacing:.03em}.muted{color:var(--muted);font-size:13px}form{display:flex;gap:8px;margin-top:14px}input{min-width:0;flex:1;padding:10px;border:1px solid var(--line);border-radius:5px;background:#fffdf7;color:var(--ink)}footer{border-top:1px solid var(--line);display:flex;justify-content:space-between;padding:16px 5vw;color:var(--muted)}
@@ -129,7 +130,7 @@ footer{color:var(--muted)}
 .practice-seat.p1 .practice-exposed{right:100%}
 .practice-seat.p3 .practice-exposed{left:100%}
 .practice-center{grid-template:1fr 1fr 1fr/1fr 1fr 1fr}
-.practice-status{flex:1 0 100%;color:#ffe4cc;font:11px var(--mono-font);letter-spacing:.08em;text-transform:uppercase}
+.practice-status{flex:1 0 100%;color:#fff1e2;font:13px/1.5 var(--mono-font);letter-spacing:.02em}
 
 /* Reserve space for each seat. Discards use the same face art and scale as the rack. */
 /* The floor is what keeps the gold ring on the drawn tile clear of its neighbour: the
@@ -243,7 +244,7 @@ footer{color:var(--muted)}
    speaking and a sentence saying what to do with this turn. Pressing it opens the longer
    reading, so it is a button -- but it is not dressed as one. */
 .practice-tip{
-  display:flex;gap:11px;align-items:baseline;width:100%;
+  display:flex;gap:11px;align-items:baseline;width:100%;min-height:59px;
   margin:13px auto 0;padding:9px 13px;text-align:left;
   background:#ffffff0f;border:1px solid #f3c4a83d;border-radius:9px;
   color:#fff1db;font:13.5px/1.45 var(--display-font);
@@ -256,6 +257,27 @@ footer{color:var(--muted)}
 .practice-tip i{color:#ffd9c6;font-style:normal}
 @media(max-width:560px){
   .practice-tip{gap:8px;padding:8px 10px;font-size:12.5px}
+}
+
+/* A call is made out loud at a table, so it is made on the felt too: the word across the
+   board for a moment and then gone. The spoken call wants a voice and the sound switch on;
+   this wants neither, which is why it is here as well and not instead. */
+.practice-call{
+  position:absolute;inset:0;z-index:4;display:grid;place-items:center;pointer-events:none;
+  font:clamp(30px,13cqi,104px)/1 var(--display-font);letter-spacing:.04em;
+  color:#ffdf9a;text-shadow:0 2px 0 #2d0800,0 0 38px #000000b0;
+  animation:practice-call 1.2s ease-out both;
+}
+@keyframes practice-call{
+  0%{opacity:0;transform:scale(.82)}
+  14%{opacity:1;transform:scale(1.05)}
+  26%{transform:scale(1)}
+  66%{opacity:1}
+  100%{opacity:0;transform:scale(1.02)}
+}
+@media(prefers-reduced-motion:reduce){
+  .practice-call{animation:practice-call-plain 1.2s linear both}
+  @keyframes practice-call-plain{0%,66%{opacity:1}100%{opacity:0}}
 }
 
 /* Reserve room for the selection ring without changing any tile's size. */
@@ -333,7 +355,7 @@ body[data-screen=play] #open-menu{
   border-top:1px solid #ffe0cb55;
 }
 .practice-actions .practice-status{
-  font-size:10px;letter-spacing:.055em;
+  font-size:13px;letter-spacing:.02em;
 }
 .practice-actions .btn{
   min-height:42px;
@@ -367,12 +389,10 @@ body[data-screen=play] #open-menu{
 
 /* The play screen is one screen, with nothing below the fold. The table is square and takes
    its size from its width alone, so on a window that is wide but not tall it stood taller
-   than the room left for it and pushed the hand off the bottom. This caps it by the height
-   as well: 272px is what everything else on the screen takes at its largest -- the content's
-   own padding top and bottom, the match bar above the board and the actions row below it,
-   measured at both the wide and the narrow layout. aspect-ratio keeps it square as it
-   shrinks, and the tiles follow, since they are sized in container units off the board. */
-#app[data-section=play]{--table-w:min(100%,720px,calc(100dvh - 272px))}
+   than the room left for it and pushed the hand off the bottom. It is capped by the height
+   as well -- see --table-w further down, where the figure is set against what the coach's
+   line and the bar under it take. aspect-ratio keeps it square as it shrinks, and the tiles
+   follow, since they are sized in container units off the board. */
 /* Anything that sits under the table is set to the table's width, not to a figure of its
    own: the table shrinks with the window's height, and a fixed width would hang over its
    edges on any window short enough to cap it. */
@@ -420,17 +440,22 @@ body[data-screen=play] #open-menu{
 /* The layout caps itself at 720px for the two-column version with the coach beside the
    table; on this screen there is only the table, so its own width rule is the only cap. */
 #app[data-section=play] .practice-layout{max-width:none}
-/* The table is centred in the window, so the free space below it is the same as the space
-   above, and the bar has to live inside that lower half. The table is capped by twice the
-   bar's band for that reason -- the half above it is spoken for just as the half below. */
+/* The table, the coach's line and the bar are one stack, centred in the window together.
+   The bar used to hang off the table's bottom edge taking no room of its own, which meant
+   it had to fit in half of what was left over -- and a claim's two buttons did not, so
+   Chow and Pass ran off the foot of the screen. 190px is what the line and the bar take
+   between them, counted once because they are inside what gets centred. */
 #app[data-section=play] .practice-layout>section{position:relative;width:100%}
-#app[data-section=play]{--table-w:min(100%,900px,calc(100dvh - 168px))}
+#app[data-section=play]{--table-w:min(100%,900px,calc(100dvh - 190px))}
 #app[data-section=play] .practice-actions{
-  position:absolute;left:50%;top:100%;bottom:auto;transform:translate(-50%,12px);
+  position:static;
   /* it carried a 1px rule along its top and 11px of padding under it, from when it was a
      row at the foot of a page rather than a prompt floating under the table */
   border:0;padding:0;
-  margin:0;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;z-index:2;
+  /* the room a claim's buttons take, kept whether or not there are any, so the table does
+     not shift up and down the window as the hand goes on */
+  min-height:70px;
+  margin:12px auto 0;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;
   width:max-content;max-width:100%;
 }
 /* Claim and Pass are one decision, so they are one shape. They were a 24px pill beside a
@@ -600,7 +625,7 @@ body.settings-open .practice-match-settings{display:grid;gap:12px}
    drawn tile to point at, and a table waiting for you looks exactly like a stopped one. */
 #app[data-section=play] .practice-actions .practice-status{
   position:static;width:auto;height:auto;overflow:visible;clip-path:none;
-  flex:0 0 100%;text-align:center;line-height:1.5;color:#ffe4ccd6;
+  flex:0 0 100%;text-align:center;line-height:1.5;color:#fff1e2;
   /* It was hidden from sight before it was shown here, and hidden text was allowed to be
      any width it liked. Shown, that width is a phone's worth of line running off both
      edges of the screen -- so it wraps, like every other line on the page. */
