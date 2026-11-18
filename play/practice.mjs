@@ -714,7 +714,7 @@ function paint(){
       /* an eight point rose: long points to the winds, short ones between */
       '<svg class="practice-rose" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><circle cx="24" cy="24" r="14.4"/><circle cx="24" cy="24" r="12.6"/><path d="M32.91 15.09L29.58 23.51L24.49 18.42Z M32.91 32.91L24.49 29.58L29.58 24.49Z M15.09 32.91L18.42 24.49L23.51 29.58Z M15.09 15.09L23.51 18.42L18.42 23.51Z"/><path d="M24.00 2.50L28.03 20.11L19.97 20.11Z M45.50 24.00L27.89 28.03L27.89 19.97Z M24.00 45.50L19.97 27.89L28.03 27.89Z M2.50 24.00L20.11 19.97L20.11 28.03Z"/><circle cx="24" cy="24" r="4.3" fill="none"/></svg>'+
 
-    '</div></div>'+coachTip()+
+    '</div></div><div class="practice-tip-slot">'+coachTip()+'</div>'+
     '<div class="actions practice-actions"><span class="practice-status" aria-live="polite">'+(claimNotice?claimNotice+' ':lastDiscard&&lastDiscard.p!==0?winds[windOf(lastDiscard.p)]+' discarded '+tileName(lastDiscard.n)+'. ':'')+status+' · '+winds[match.round]+' round · '+wall.length+' in wall</span>'+(phase==='offer'?offer.options.map((o,i)=>'<button class="btn" data-practice="claim" data-i="'+i+'">'+o.name+'</button>').join('')+'<button class="btn ghost" data-practice="pass">Pass</button>':'')+
     (phase==='player'&&canSelfDraw&&winsWith(0,hands[0],true)?'<button class="btn" data-practice="win">Win</button>':'')+
     /* A hand that has ended always offers the way on. Wins to match defaults to one, so the

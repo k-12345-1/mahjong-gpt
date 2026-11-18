@@ -244,8 +244,8 @@ footer{color:var(--muted)}
    speaking and a sentence saying what to do with this turn. Pressing it opens the longer
    reading, so it is a button -- but it is not dressed as one. */
 .practice-tip{
-  display:flex;gap:11px;align-items:baseline;width:100%;min-height:59px;
-  margin:13px auto 0;padding:9px 13px;text-align:left;
+  display:flex;gap:11px;align-items:baseline;width:100%;
+  margin:0;padding:9px 13px;text-align:left;
   background:#ffffff0f;border:1px solid #f3c4a83d;border-radius:9px;
   color:#fff1db;font:13.5px/1.45 var(--display-font);
 }
@@ -397,7 +397,12 @@ body[data-screen=play] #open-menu{
    own: the table shrinks with the window's height, and a fixed width would hang over its
    edges on any window short enough to cap it. */
 #app[data-section=play] .practice-board,
-#app[data-section=play] .practice-tip{width:var(--table-w)}
+/* The coach's box is as tall as the line inside it. The room held so the table does not
+   move when that line runs to two is held around the box rather than in it -- the box was
+   standing a line taller than it had anything to say. */
+#app[data-section=play] .practice-tip-slot{width:var(--table-w);margin:13px auto 0;min-height:59px}
+/* no line to hold room for: the coach switched off, or a hand that has ended */
+#app[data-section=play] .practice-tip-slot:empty{min-height:0;margin:0}
 
 /* The menu button is the same control as the one on the hero, so it is the same button:
    same size, same corner radius, same inset from the edge, and the three bars are the
@@ -452,8 +457,10 @@ body[data-screen=play] #open-menu{
   /* 13 + 59 + 12 + 42: the line's gap and height, the bar's gap and height */
   --under:126px;
   /* dropped where there is no height to spare */
-  --lift:40px;
-  --table-w:min(100%,900px,calc(100dvh - var(--under) - var(--lift) - 24px));
+  --lift:28px;
+  /* 36px of give: the breath under the last line, and enough that the longest thing the
+     coach says -- which runs to three lines on a narrow table -- still has somewhere to go */
+  --table-w:min(100%,900px,calc(100dvh - var(--under) - var(--lift) - 36px));
 }
 #app[data-section=play] .practice-actions{
   position:static;
@@ -463,8 +470,13 @@ body[data-screen=play] #open-menu{
   /* the room a claim's buttons take, kept whether or not there are any, so the table does
      not shift up and down the window as the hand goes on */
   min-height:42px;
-  margin:12px auto 0;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;
-  width:max-content;max-width:100%;
+  margin:12px auto 0;justify-content:center;align-items:center;gap:8px;
+  /* the same width as the table and the coach's box above it, so the line that says what
+     just happened wraps where they end instead of running past both sides. It shares the
+     row with Chow and Pass rather than dropping below them -- held to that width it would
+     otherwise wrap first and take a second row, which costs the table its height twice. */
+  flex-wrap:nowrap;
+  width:var(--table-w);max-width:100%;
 }
 /* Claim and Pass are one decision, so they are one shape. They were a 24px pill beside a
    5px rectangle, with 19px of padding against 13px. */
@@ -786,7 +798,9 @@ body.settings-open .practice-match-settings{display:grid;gap:12px}
    drop below it, so the room held for them is the room they take there. */
 @media(max-width:700px){
   #app[data-section=play]{--under:173px}
-  #app[data-section=play] .practice-actions{min-height:89px}
+  /* the line is too long to share the row at this width, so the buttons drop below it and
+     the room held is the room they take there */
+  #app[data-section=play] .practice-actions{min-height:89px;flex-wrap:wrap}
 }
 
 @media(max-height:560px){
