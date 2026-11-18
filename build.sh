@@ -8,6 +8,10 @@ mkdir preview
 {
   printf '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
   printf '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
+  # Safari tints its own bars from the page unless the page says otherwise, and what it
+  # picked was a darker red at the top and a lighter one at the foot. This is the red the
+  # ground actually paints: the lacquer with the grain over it.
+  printf '<meta name="theme-color" content="#9c0904">\n'
   printf '<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}'
   printf 'body{margin:0;font:14px system-ui}img{max-width:100%%}[hidden]{display:none!important}</style>\n'
   printf '</head>\n<body>\n'

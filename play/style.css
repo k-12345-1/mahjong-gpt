@@ -585,7 +585,8 @@ body.settings-open::before{
 body.settings-open #app[data-section=play] .practice-match{
   display:block;position:fixed;z-index:36;
   top:50%;left:50%;transform:translate(-50%,-50%);
-  width:min(420px,calc(100% - 32px));margin:0;
+  /* the way out of this card is a tap beside it, so there has to be a beside it */
+  width:min(420px,calc(100% - 72px));margin:0;
   background:#7a0300;color:#fff5e5;
   border:1px solid #ffe0cb55;border-radius:12px;
   padding:clamp(18px,3vw,26px);box-shadow:0 18px 50px #1d03007a;
@@ -1164,6 +1165,10 @@ body.settings-open .practice-match-settings{display:grid;gap:12px}
 .stage-group{
   position:absolute;left:50%;top:56%;width:max-content;max-width:94cqw;text-align:center;
   transform:translate(-50%,-50%) scale(.8);opacity:0;
+  /* opacity:0 alone was not enough: the tiles carry a drop-shadow, and a filtered child of
+     a transparent parent is still painted in Safari -- so the kinds still waiting their
+     turn left their shadows stacked in the middle of the stage, as a faint empty box. */
+  visibility:hidden;
   transition:transform 1.05s cubic-bezier(.22,.7,.18,1),opacity .75s ease,top .9s ease;
 }
 .stage-tiles{display:flex;justify-content:center;gap:4px}
@@ -1181,7 +1186,7 @@ body.settings-open .practice-match-settings{display:grid;gap:12px}
 .stage .g0,.stage .g1,.stage .g2{--py:calc(-1 * var(--dy))}
 .stage .g3,.stage .g4,.stage .g5{--py:var(--dy)}
 .stage.in0 .g0,.stage.in1 .g1,.stage.in2 .g2,
-.stage.in3 .g3,.stage.in4 .g4,.stage.in5 .g5{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.stage.in3 .g3,.stage.in4 .g4,.stage.in5 .g5{visibility:visible;opacity:1;transform:translate(-50%,-50%) scale(1)}
 .stage.park0 .g0,.stage.park1 .g1,.stage.park2 .g2,
 .stage.park3 .g3,.stage.park4 .g4,.stage.park5 .g5{
   opacity:.74;transform:translate(calc(-50% + var(--px)),calc(-50% + var(--py))) scale(var(--park));
