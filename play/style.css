@@ -440,19 +440,20 @@ body[data-screen=play] #open-menu{
 /* The layout caps itself at 720px for the two-column version with the coach beside the
    table; on this screen there is only the table, so its own width rule is the only cap. */
 #app[data-section=play] .practice-layout{max-width:none}
-/* The table is the screen, so it sits in the middle of the window -- not the stack it is
-   at the top of. The coach's line and the bar under it take --under between them, and the
-   same again is held above the table, which is what puts the table's own middle on the
-   window's middle at any size. The table is capped by what is left over, and the 20px is
-   the breath under the last line. Centring the stack instead left the table sitting a
-   whole bar's half-height high, which is what it looked like. */
+/* The table, the coach's line and the bar are one stack centred in the window, which puts
+   the table itself high -- everything under it is on one side. Holding as much above the
+   table as the line and the bar take below would centre the table exactly, but the table
+   is capped by whatever is left over and that reading costs it a quarter of its height.
+   So the table keeps its size and the --lift is the band of felt held off the top edge:
+   enough that it is clearly not touching it, paid for by the bar being one row rather
+   than two. --under is what is below, and the 24px is the breath under the last line. */
 #app[data-section=play] .practice-layout>section{position:relative;width:100%;padding-top:var(--lift)}
 #app[data-section=play]{
   /* 13 + 59 + 12 + 42: the line's gap and height, the bar's gap and height */
   --under:126px;
-  /* what is held above the table to match it -- dropped where there is no height to spare */
-  --lift:var(--under);
-  --table-w:min(100%,900px,calc(100dvh - var(--under) - var(--lift) - 20px));
+  /* dropped where there is no height to spare */
+  --lift:40px;
+  --table-w:min(100%,900px,calc(100dvh - var(--under) - var(--lift) - 24px));
 }
 #app[data-section=play] .practice-actions{
   position:static;
