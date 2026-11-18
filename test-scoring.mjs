@@ -5,7 +5,8 @@
    Unless a case says otherwise the hand has one set open -- a bamboo run -- so that
    the faan for never opening the hand does not quietly sit on top of every figure. */
 import assert from 'node:assert';
-import { faanFor, nextDeal } from './play/practice.mjs';
+import { faanFor, nextDeal, faces } from './play/practice.mjs';
+import { scoreShown } from './play/gpt.mjs';
 
 const pung = t => [t, t, t];
 const chow = t => [t, t + 1, t + 2];
@@ -114,6 +115,38 @@ n++;
 m = play([undefined, undefined, undefined, undefined]);
 assert.deepStrictEqual([m.round, m.dealt], [1, 0], 'four drawn hands finish the East round');
 n++;
+
+/* ---- the chat counts the hand it just drew -------------------------------------------
+   "How many faan is that worth" used to be answered with the page on how faan is counted.
+   The tiles of the last answer are scored instead, by the same faanFor as above. */
+{
+  const groups = str => str.trim().split('|').map(g => g.trim().split(/\s+/).map(f => faces.indexOf(f)));
+  const of = str => { const g = groups(str); return scoreShown({ groups: g, all: g.flat() }); };
+
+  /* all pungs, laid out as four sets and a pair: three for the shape, one for no flowers */
+  const pungs = of('characters-3 characters-3 characters-3 | dots-7 dots-7 dots-7 |'
+    + ' bamboo-9 bamboo-9 bamboo-9 | west west west | dots-2 dots-2');
+  assert.match(pungs, /^4 faan: /);
+  assert.match(pungs, /every set a pung is 3/);
+  assert.match(pungs, /no flowers is 1/);
+  n++;
+
+  /* the three dragons, and the count says what earned it */
+  const dragons = of('red-dragon red-dragon red-dragon | green-dragon green-dragon green-dragon |'
+    + ' white-dragon white-dragon white-dragon | bamboo-4 bamboo-5 bamboo-6 | characters-9 characters-9');
+  assert.match(dragons, /^9 faan: /);
+  assert.match(dragons, /all three dragons/i);
+  n++;
+
+  /* three tiles are not a hand, and it says so rather than putting a number on them */
+  assert.match(of('dots-2 dots-3 dots-4'), /not a whole hand/);
+  /* fourteen tiles that do not make four sets and a pair are not a hand either */
+  assert.match(of('dots-2 dots-3 dots-5 | dots-7 dots-8 dots-9 | bamboo-1 bamboo-3 bamboo-5 |'
+    + ' west west north | east east'), /not a whole hand/);
+  /* nothing drawn yet, nothing to count */
+  assert.equal(scoreShown(null), null);
+  n++;
+}
 
 console.log(n + ' checks passed');
 /* practice.mjs is a page module and leaves the loop alive; the checks are done. */

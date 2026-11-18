@@ -7,7 +7,7 @@
    with different tiles -- being shown the same three red dragons twice teaches nothing.
    Tiles are drawn in the table's own art: [[bamboo-1 bamboo-2 bamboo-3]] in an answer draws
    that run of tiles. */
-import { faces, label, img, tableState } from './practice.mjs';
+import { faces, label, img, tableState, faanFor, winning } from './practice.mjs';
 
 const FACE_SET = new Set(faces);
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -73,11 +73,17 @@ const BOOK = [
   { on: ['kong', 'gong', 'four of a kind', 'four identical'], say: [
     'A kong is four identical tiles:\n[[dots-5 dots-5 dots-5 dots-5]]\nDeclare it and draw a replacement, because a kong still counts as only one set. Forget the replacement tile and your hand is one short.',
     'A concealed kong -- all four drawn by you:\n[[bamboo-1 bamboo-1 bamboo-1 bamboo-1]]\nLay it face down at the ends. It keeps the hand concealed and still earns the replacement draw.',
-    'You can also rob a kong: if a player adds a fourth tile to a pung already on the table and that tile completes your hand, you may take it and win. It is the one time a tile nobody discarded can be claimed.',
+  ] },
+  { on: ['rob', 'robbing', 'rob a kong', 'robbing a kong', 'robbing the kong', 'stolen kong'], say: [
+    'You can rob a kong: if a player adds a fourth tile to a pung already face up on the table and that tile completes your hand, you may take it and win. It is the one time a tile nobody discarded can be claimed, and it does not work on a concealed kong -- those four tiles were never offered to anyone.',
   ] },
   { on: ['pair', 'eyes', 'eye'], say: [
     'The pair is the two matching tiles a hand is built around -- the eyes. Four sets and one pair makes fourteen tiles:\n[[south south]]\nAny tile can be the pair.',
     'Hold two candidate pairs through the middle of the hand:\n[[dots-3 dots-3]] [[characters-6 characters-6]]\nWhichever one turns into a pung first, the other stays as the eyes. Settling on your pair too early throws away that choice.',
+  ] },
+  { on: ['for a pair', 'call a pair', 'claim a pair', 'claim for a pair', 'take a pair',
+         'pung a pair', 'pair from a discard'], say: [
+    'You cannot call a discard to make a pair. A chow, a pung and a kong can all be claimed; a pair cannot -- the second tile has to come off the wall.\n[[south south]]\nThe one exception is the tile that finishes the hand. That one wins, and it may be taken from any seat.',
   ] },
   { on: ['wait', 'waits', 'waiting', 'tenpai', 'one away', 'ready'], say: [
     'The best wait is two-sided -- two tiles in a row, completed at either end:\n[[bamboo-4 bamboo-5]]\nA 3 or a 6 finishes it: eight tiles. Steer towards this shape whenever you can choose.',
@@ -166,8 +172,9 @@ const BOOK = [
     'Terminals are the ones and nines:\n[[characters-1 characters-9 dots-1 dots-9 bamboo-1 bamboo-9]]\nThey make fewer runs than middle tiles -- a 9 only reaches down, a 5 reaches both ways -- which is why they are discarded early and why they pair up so easily.',
     'Thirteen tiles are dealt to each player and fourteen to the dealer, who throws first. From then on everyone draws one and discards one, so a hand is thirteen tiles waiting for a fourteenth.',
   ] },
-  { on: ['dealer', 'deal', 'east deals', 'rotate', 'who starts', 'first discard',
-         'discards first', 'who discards', 'seat', 'seating'], say: [
+  { on: ['dealer', 'deal', 'east deals', 'rotate', 'who starts', 'who goes first',
+         'goes first', 'plays first', 'first', 'turn order', 'order of play',
+         'first discard', 'discards first', 'who discards', 'seat', 'seating'], say: [
     'The dealer is East and throws the first tile. When the hand ends the deal passes on, so every seat takes East in turn and the winds move round the table with it.',
     'Being East is worth playing for: the dealer draws first, which over a long match is a real edge, and the dealer’s seat wind is East -- a pung of East is a faan on top.',
   ] },
@@ -229,6 +236,62 @@ const VOCAB = new Set([...BOOK.flatMap(e => e.on), 'mahjong', 'majong', 'mah-jon
 const ASK_HAND = /\b(\d{1,2})\s*(faan|fan|point|points)\b|\bworth\s*(\d{1,2})\b/i;
 const AGAIN = /\b(more|another|other|others|different|else|again|next|new)\b/;
 
+/* ---- counting the hand on the screen ------------------------------------------------
+   "How many faan is that worth?" is a question about the tiles that were just drawn, and
+   it used to be answered with the page on how faan is counted -- which is the next
+   question along, not this one. The tiles of the last answer are kept, and the count is
+   the table's own faanFor, the same one the practice table scores a finished hand with,
+   so the chat and the table can never put a different number on the same fourteen tiles. */
+const SCORE_WORD = /\b(faan|fan|score|scores|scored|scoring|worth|value|count|counts|points?)\b/;
+const THAT_ONE = /\b(above|this|that|these|those|it|shown|showed|same)\b/;
+let lastDrawn = null;
+
+/* The tiles an answer drew, kept as the groups they were drawn in: a hand is written as
+   four sets and a pair, and which tiles were together is what says whether a set was
+   called or held. */
+function remember(text) {
+  const groups = [...String(text).matchAll(/\[\[([^\]]*)\]\]/g)]
+    .map(m => m[1].trim().split(/[\s,]+/).filter(f => FACE_SET.has(f)).map(f => faces.indexOf(f)))
+    .filter(g => g.length);
+  lastDrawn = groups.length ? { groups, all: groups.flat() } : lastDrawn;
+}
+
+const lower = s => s.charAt(0).toLowerCase() + s.slice(1);
+const listOf = parts => parts.length < 2 ? parts.join('')
+  : parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
+
+export function scoreShown(drawn) {
+  if (!drawn) return null;
+  const { all, groups } = drawn;
+  if (all.length !== 14 || !winning(all, 0))
+    return 'What I drew there is ' + all.length + ' tile' + (all.length === 1 ? '' : 's')
+      + ', not a whole hand, so there is no faan on it yet. A hand is four sets and a pair, fourteen tiles.';
+  /* Laid out as four sets and a pair, the sets are read as sets put down. Drawn any other
+     way the fourteen tiles are read as a hand still in the hand, which is worth more --
+     never opening it is a faan in itself -- so which it is gets said either way. */
+  const sets = groups.filter(g => g.length === 3 || g.length === 4);
+  const pair = groups.filter(g => g.length === 2);
+  const laidOut = sets.length === 4 && pair.length === 1;
+  const read = laidOut
+    ? faanFor({ concealed: pair[0], exposed: sets, bonuses: [], seatWind: 0, roundWind: 0, won: true, selfDraw: false })
+    : faanFor({ concealed: all, exposed: [], bonuses: [], seatWind: 0, roundWind: 0, won: true, selfDraw: false });
+  const parts = read.wins.map(w => lower(w.why) + ' is ' + w.faan);
+  /* What the hand is worth and what the player did are two different things: a hand can
+     reach the table's minimum on its shape alone, or fall short of it however it was won.
+     Where it falls short, saying the number without saying that is half an answer -- the
+     hand cannot be declared at all on a table with a minimum. */
+  const BONUS = ['concealed', 'self-draw', 'no flowers', 'own flower', 'a full set', 'a plain hand'];
+  const shape = read.had.some(tag => !BONUS.includes(tag));
+  return read.faan + ' faan: ' + listOf(parts) + '.'
+    + (read.faan < 3
+      ? '\n' + (shape ? '' : 'The shape itself pays nothing. ')
+        + 'Most tables ask three faan before you may go out, so that hand could not be declared on one.'
+      : '')
+    + '\n' + (laidOut
+      ? 'That counts it as East in the East round, with the sets face up and won on a discard. Held closed it is worth one more, and won on your own draw another.'
+      : 'That counts it as East in the East round, held closed and won on a discard. Winning on your own draw would add one more.');
+}
+
 /* What has been shown already, so the same answer is not served twice running. */
 const shown = new Map();
 let lastKey = null;
@@ -256,6 +319,13 @@ function lookup(question) {
   const q = ' ' + question.toLowerCase()
     .replace(/hong\s*kong/g, ' ')
     .replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+  /* Asked about the tiles already on the screen before asked for new ones, so "what is
+     that one worth" counts what is there rather than drawing another hand. */
+  if (SCORE_WORD.test(q) && THAT_ONE.test(q) && lastDrawn) {
+    const count = scoreShown(lastDrawn);
+    if (count) { lastKey = null; return count; }
+  }
+
   const faan = question.match(ASK_HAND);
   /* "a hand worth 3 faan" wants tiles; "how many points is 3 faan" wants the table */
   if (faan && /\b(hand|hands|show|see|example|look|shape)\b/.test(q)) {
@@ -282,6 +352,13 @@ function lookup(question) {
     const key = BOOK.indexOf(best);
     lastKey = key;
     return nextOf(key, best.say);
+  }
+  /* Nothing in the book matched -- but a hand is on the screen and the question points at
+     it. "And that one?" is a question about those tiles, not a question about nothing, and
+     being told "I only know mahjong" is the worst answer the panel has. */
+  if (THAT_ONE.test(q) && lastDrawn) {
+    const count = scoreShown(lastDrawn);
+    if (count) { lastKey = null; return count; }
   }
   lastKey = null;
   return [...said].some(w => VOCAB.has(w)) ? VAGUE : null;
@@ -351,9 +428,12 @@ function coach() {
   return asked;
 }
 
-/* Memoryless: the rules, the table, the app's own page on the subject and the question,
-   every time. The page goes in so the coach and the rest of the app cannot contradict
-   each other on a point of rules. */
+/* The rules, the table, the last few turns, the app's own page on the subject and the
+   question. The page goes in so the coach and the rest of the app cannot contradict each
+   other on a point of rules. The turns go in because half the questions anyone asks are
+   about the answer before them -- "how many faan is that worth", "show me another" -- and
+   with nothing behind it the coach answered the nearest general question instead. */
+const HISTORY = 6;
 function brief(question, page) {
   const state = tableState();
   const parts = [
@@ -370,6 +450,9 @@ function brief(question, page) {
   parts.push(state
     ? 'The table in front of the player right now:\n' + JSON.stringify(state, null, 1)
     : 'No hand is in play, so this is a question about the rules, not about a hand.');
+  if (thread.length > 1) parts.push('What has been said so far, oldest first. "That hand", '
+    + '"it" and "another" mean what they mean here:\n'
+    + thread.slice(0, -1).slice(-HISTORY).map(m => (m.role === 'you' ? 'Player: ' : 'You: ') + m.text).join('\n'));
   if (page) parts.push("The app's own page on this subject. Where it covers the question, "
     + 'agree with it:\n' + page);
   parts.push('Question: ' + question);
@@ -405,6 +488,7 @@ async function send(question) {
       if (said) {
         answer.className = 'gpt-line coach';
         answer.innerHTML = body(said);
+        remember(said);
         thread.push({ role: 'coach', text: said });
         busy = false; field.focus(); log.scrollTop = log.scrollHeight;
         return;
@@ -420,6 +504,7 @@ async function send(question) {
   setTimeout(() => {
     answer.className = 'gpt-line coach' + (found ? '' : ' off');
     if (found) type(answer, text); else answer.textContent = text;
+    if (found) remember(text);
     thread.push({ role: 'coach', text, off: !found });
     busy = false;
     field.focus();
@@ -433,6 +518,7 @@ export function resetGpt() {
   thread.length = 0;
   shown.clear();
   lastKey = null;
+  lastDrawn = null;
 }
 
 export function mountGpt(el) {
