@@ -25,4 +25,17 @@ cp -R play preview/play
 # in the repo as sources and off the wire.
 rm -rf preview/play/tile-art/fronts preview/play/tile-art/shared
 rm -f preview/play/dragon.png
-echo "built preview/index.html ($(wc -c < preview/index.html) bytes) + dragon.webp + play/ ($(find preview/play -type f | wc -l | tr -d ' ') files), $(du -sh preview | cut -f1) in all"
+
+# Four paths worth sharing: /home is the hero, /play the table, /learn-to-play the school,
+# /mahjong-gpt the coach. The game's three screens are one shell served at three paths
+# rather than three copies of it: the shell carries <base href="../play/">, which is that
+# one directory from any of the three, so the stylesheet, the modules and the tile art are
+# fetched once and shared across them.
+for route in learn-to-play mahjong-gpt; do
+  mkdir -p "preview/$route"
+  cp -f play/index.html "preview/$route/index.html"
+done
+# the hero answers at /home as well as at the root, because the menu calls it Home
+mkdir -p preview/home
+sed 's|<meta charset="utf-8">|<meta charset="utf-8"><base href="../">|' preview/index.html > preview/home/index.html
+echo "built preview/index.html ($(wc -c < preview/index.html) bytes) + dragon.webp + play/ ($(find preview/play -type f | wc -l | tr -d ' ') files) + home/ learn-to-play/ mahjong-gpt/, $(du -sh preview | cut -f1) in all"

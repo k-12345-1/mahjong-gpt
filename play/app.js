@@ -7,9 +7,17 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const motion = (target, frames, options) => {
   if (!reduce.matches && target) window.Motion?.animate(target, frames, options);
 };
+/* Each screen is a page of its own, so the address bar carries something worth sharing:
+   /play, /learn-to-play, /mahjong-gpt. They are one shell served at three paths rather
+   than three copies of it -- the build writes the other two beside this one with a <base>
+   pointing back here, so the stylesheet, the modules and the tile art are fetched once.
+   The old #instructions and #gpt links still land where they used to. */
+const PATHS = {play:'play', 'learn-to-play':'instructions', 'mahjong-gpt':'gpt',
+               instructions:'instructions', gpt:'gpt'};
 function route() {
-  const key = location.hash.slice(1);
-  return ['play','instructions','gpt'].includes(key) ? key : 'play';
+  const key = location.hash.slice(1)
+    || location.pathname.replace(/\/[^/]*\.html$/,'/').replace(/\/$/,'').split('/').pop();
+  return PATHS[key] || 'play';
 }
 function banner(id) {
   const copy = {play:['01 / THE TABLE','PLAY','Take a seat. Practice a few turns and see what each discard changes.'],
@@ -24,8 +32,12 @@ function banner(id) {
 function shell(id, body) {
   app.dataset.section = id;
   app.innerHTML = banner(id) + '<div class="wrap content"><div class="columns">'+body+'</div></div>';
+  here(id);
+}
+/* which of the four the page is on, said once rather than at each of the three screens */
+function here(id) {
   document.querySelectorAll('nav a').forEach(link => {
-    if (link.hash === '#'+id) link.setAttribute('aria-current','page');
+    if (link.dataset.section === id) link.setAttribute('aria-current','page');
     else link.removeAttribute('aria-current');
   });
 }
@@ -37,10 +49,7 @@ function play() {
 function instructions() {
   app.dataset.section = 'instructions';
   app.innerHTML = '<section class="learn"></section>';
-  document.querySelectorAll('nav a').forEach(link => {
-    if (link.hash === '#instructions') link.setAttribute('aria-current','page');
-    else link.removeAttribute('aria-current');
-  });
+  here('instructions');
   mountLearn(app.querySelector('.learn'), paintLearnNav);
 }
 /* The coach has the screen to itself -- no hero, no columns -- so it reads as the red page
@@ -48,10 +57,7 @@ function instructions() {
 function gpt() {
   app.dataset.section = 'gpt';
   app.innerHTML = '<section class="gpt"></section>';
-  document.querySelectorAll('nav a').forEach(link => {
-    if (link.hash === '#gpt') link.setAttribute('aria-current','page');
-    else link.removeAttribute('aria-current');
-  });
+  here('gpt');
   mountGpt(app.querySelector('.gpt'));
 }
 /* The bar carries only what the screen it is on can use. The rest close up, which is why
@@ -82,14 +88,26 @@ function render(enter=false) {
 }
 /* No entrance animation when moving between sections from the menu: the content was
    fading up from a tenth of its opacity every time, which read as a flicker. */
-addEventListener('hashchange',()=>{render();scrollTo(0,0);});
+/* Moving between the screens writes the new address and repaints, rather than fetching
+   the same shell again: the chat you are in the middle of is still there when you come
+   back from the rules. popstate covers Back, Forward and any old #hash link. */
+addEventListener('popstate',()=>{render();scrollTo(0,0);});
+addEventListener('click',e=>{
+  const link=e.target.closest('a[data-section]');
+  if(!link||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  e.preventDefault();
+  if(link.href!==location.href)history.pushState({},'',link.href);
+  render();scrollTo(0,0);
+});
 render(true);
 
 /* The sound switch sits beside the menu in the same bar. The speaker keeps its body and
    swaps the wave for a cross, so the button never changes width. */
 const soundBtn = document.querySelector('#toggle-sound');
 /* Three steps, drawn the way a volume control is: the cross, then one arc, then two.
-   Turning it down takes a line away each time and wraps back to full from off. */
+   Turning it up adds a line each time and wraps back to off from full. No page can read
+   what the device's own volume is set to, so this is the table's own level and the icon
+   is what shows it. */
 const WAVE = 'M15.5 9.2a4 4 0 010 5.6', CROSS = 'M15.5 9.5l5 5m0-5l-5 5';
 const LOUD = 'M18.4 6.8a8 8 0 010 10.4';
 const SAYS = ['Sound off', 'Sound low', 'Sound full'];
@@ -101,7 +119,7 @@ function paintSound() {
   soundBtn.setAttribute('aria-label', SAYS[v] + ', tap to change');
 }
 soundBtn.onclick = () => {
-  setVolume((volume() + 2) % 3);
+  setVolume((volume() + 1) % 3);
   paintSound();
   /* whatever it has been turned to should say so, at that level */
   if (volume()) clack();

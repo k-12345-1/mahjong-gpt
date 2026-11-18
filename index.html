@@ -14,14 +14,13 @@ var a=document.createElement("link");a.rel="apple-touch-icon";a.href=l.href;docu
 /* Layout: a lacquer table. Giant Didone sets the name, mono carries every label and
    number, and the hand you are playing sits on it as pale paper objects. */
 :root{
-  /* The ground, read off the dragon photograph: a deep lacquer that falls away to
-     near-black at the edges, rather than the brighter vermilion it was. */
-  --lacquer:#9c0400; --lacquer-deep:#6e0200;
-  /* The ground is a slow gradient over a narrow range of red -- about forty levels
-     across a whole screen -- so eight-bit colour lays it down in visible bands. A
-     faint grain over the top dithers them away; it is too fine to read as texture. */
+  /* The ground, read off the dragon photograph. One flat lacquer over the whole page:
+     it used to fall away to near-black at the edges, which left the foot of a screen a
+     visibly different red from its middle. */
+  --lacquer:#9c0400;
+  /* A faint grain over the flat field, too fine to read as texture. */
   --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23g)' opacity='.055'/></svg>");
-  --ground:var(--grain) repeat,radial-gradient(118% 92% at 50% 44%,var(--lacquer) 0%,var(--lacquer) 34%,var(--lacquer-deep) 100%);
+  --ground:var(--grain) repeat,var(--lacquer);
   --chalk:#e9e6e6;
   --display:'Instrument Serif','Didot','Bodoni MT',Georgia,serif;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -128,8 +127,8 @@ body{color:var(--chalk);font-family:var(--mono);font-size:13.5px;line-height:1.6
     <ul>
       <li style="animation-delay:.08s"><a href="#home">Home</a></li>
       <li style="animation-delay:.14s"><a href="#play">Play</a></li>
-      <li style="animation-delay:.20s"><a href="#instructions">Learn to play</a></li>
-      <li style="animation-delay:.26s"><a href="#gpt">Ask Mahjong GPT</a></li>
+      <li style="animation-delay:.20s"><a href="#instructions">Learn to Play</a></li>
+      <li style="animation-delay:.26s"><a href="#gpt">MahjongGPT</a></li>
     </ul>
   </div>
 </nav>
@@ -214,9 +213,9 @@ function boot() {
     /* Play is the game and Ask Mahjong GPT is the coach, each a page of its own next to
        this one, with its own way back here. The blank page is now only ever the fallback
        for a link with nowhere to go. */
-    if (href === '#play') { location.href = 'play/index.html'; return; }
-    if (href === '#instructions') { location.href = 'play/index.html#instructions'; return; }
-    if (href === '#gpt') { location.href = 'play/index.html#gpt'; return; }
+    if (href === '#play') { location.href = 'play/'; return; }
+    if (href === '#instructions') { location.href = 'learn-to-play/'; return; }
+    if (href === '#gpt') { location.href = 'mahjong-gpt/'; return; }
     $('#blankPage').hidden = href === '#home';
     if (href !== '#home') return;
     /* the target may not be on the page; closing the menu is then the whole action */
@@ -237,7 +236,7 @@ boot();
 <!-- Play is the next page, and it is the one everybody here is going to. Its parts are
      pulled down while this page sits idle, so the press on PLAY meets a warm cache
      instead of a blank screen. -->
-<link rel="prefetch" href="play/index.html">
+<link rel="prefetch" href="play/">
 <link rel="prefetch" href="play/style.css">
 <link rel="prefetch" href="play/app.js">
 <link rel="prefetch" href="play/practice.mjs">
