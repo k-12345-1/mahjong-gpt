@@ -2,6 +2,7 @@ import SwiftUI
 
 enum Screen: String, CaseIterable {
     case home, play, learn, chat
+    /// the labels the game shell's own menu uses
     var title: String {
         switch self {
         case .home: "HOME"
@@ -11,6 +12,14 @@ enum Screen: String, CaseIterable {
         }
     }
 }
+
+/* Where the site pins things in the corner. Safari hands the page a viewport that already
+   starts below the status bar, so `env(safe-area-inset-top)` is 0 there and the game
+   screens sit 2.5vw down. An app gets the whole screen, so the same distance is measured
+   from the bottom of the status bar instead -- which is what `top` is for below. */
+func corner(_ width: CGFloat) -> CGFloat { width * 0.025 }
+/// the hero's own corner, which the stylesheet gives a 16px floor
+let heroCorner: CGFloat = 16
 
 struct RootView: View {
     @Environment(Table.self) private var table
@@ -22,168 +31,182 @@ struct RootView: View {
     @State private var chat = ChatState()
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Lacquer.ground.ignoresSafeArea()
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            ZStack(alignment: .topTrailing) {
+                /* The hero stands on the flat lacquer; everything else has the grain
+                   over it, exactly as the two stylesheets have it. */
+                Color.clear.lacquerGround(grain: screen != .home)
 
-            Group {
                 switch screen {
-                case .home: HomeView(go: { screen = $0 })
+                case .home: HeroView(width: w, height: h)
                 case .play: TableView(settingsOpen: $settingsOpen)
-                case .learn: LearnView(state: $learn)
-                case .chat: ChatView(state: $chat)
+                case .learn: LearnView(state: $learn, width: w)
+                case .chat: ChatView(state: $chat, width: w)
+                }
+
+                if screen == .home {
+                    bar([.menu]) { _ in menuOpen = true }
+                        .padding(.top, heroCorner).padding(.trailing, heroCorner)
+                } else {
+                    topBar
+                        .padding(.top, corner(w)).padding(.trailing, corner(w))
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            topBar
-                .padding(.top, 10)
-                .padding(.trailing, 12)
+            .frame(width: w, height: h)
+            .overlay { if settingsOpen { SettingsCard { settingsOpen = false } } }
+            .overlay { if menuOpen { menu(width: w, height: h) } }
         }
-        .overlay { if menuOpen { menu } }
-        .sheet(isPresented: $settingsOpen) { SettingsSheet() }
         .onAppear { Sound.load(); soundLevel = Sound.level }
-        .animation(.easeInOut(duration: 0.22), value: screen)
     }
 
-    /* One bar in the corner holding the menu and whatever the screen in front needs. A
-       button that does not belong on this screen closes up instead of disappearing, so the
-       bar changes width in a movement rather than a jump. */
+    // MARK: - the bar in the corner
+
+    private enum BarButton { case sound, settings, back, on, again, menu }
+
+    /* One bar in the corner holding the menu and whatever the screen in front needs.
+       44pt buttons in a white box with an 8pt corner, as the site has it. */
     private var topBar: some View {
-        HStack(spacing: 0) {
-            barButton("speaker.wave.2", label: "Sound") {
+        var buttons: [BarButton] = [.sound]
+        if screen == .play { buttons.append(.settings) }
+        if screen == .learn { buttons += [.back, .on] }
+        if screen == .chat { buttons.append(.again) }
+        buttons.append(.menu)
+        return bar(buttons) { which in
+            switch which {
+            case .sound:
                 Sound.level = (Sound.level + 1) % 3
                 soundLevel = Sound.level
                 Sound.clack()
-            }
-            .overlay(alignment: .bottom) { volumeBars.padding(.bottom, 5) }
-
-            if screen == .play {
-                barButton("gearshape", label: "Match settings") { settingsOpen = true }
-            }
-            if screen == .learn {
-                barButton("chevron.left", label: "Previous lesson") { learn.back() }
-                    .disabled(!learn.canGoBack)
-                barButton("chevron.right", label: "Next lesson") { learn.on() }
-            }
-            if screen == .chat {
-                barButton("arrow.clockwise", label: "Start a new chat") { chat.reset() }
-            }
-            barButton("line.3.horizontal", label: "Open menu") { menuOpen = true }
-        }
-        .background(.white, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
-
-    private func barButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 17, weight: .semibold))
-                .frame(width: 44, height: 44)
-        }
-        .tint(Color(red: 0.16, green: 0.09, blue: 0.08))
-        .accessibilityLabel(label)
-    }
-
-    /// the level shown as bars, filling up as it is turned up
-    private var volumeBars: some View {
-        HStack(spacing: 2) {
-            ForEach(0..<2) { i in
-                Capsule()
-                    .fill(Color(red: 0.16, green: 0.09, blue: 0.08).opacity(soundLevel > i ? 0.85 : 0.17))
-                    .frame(width: 3.5, height: CGFloat(4 + i * 3))
+            case .settings: settingsOpen = true
+            case .back: learn.back()
+            case .on: learn.on()
+            case .again: chat.reset()
+            case .menu: menuOpen = true
             }
         }
-        .frame(width: 44, alignment: .center)
-        .allowsHitTesting(false)
     }
 
-    private var menu: some View {
-        ZStack(alignment: .topTrailing) {
-            Lacquer.ground.ignoresSafeArea()
-            VStack(alignment: .leading, spacing: 18) {
+    private func bar(_ buttons: [BarButton], tap: @escaping (BarButton) -> Void) -> some View {
+        HStack(spacing: 0) {
+            ForEach(Array(buttons.enumerated()), id: \.offset) { _, which in
+                Button { tap(which) } label: {
+                    glyph(for: which)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .foregroundStyle(Lacquer.ink)
+                .disabled(which == .back && !learn.canGoBack)
+                .opacity(which == .back && !learn.canGoBack ? 0.3 : 1)
+                .accessibilityLabel(label(for: which))
+            }
+        }
+        .background(.white, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    @ViewBuilder private func glyph(for which: BarButton) -> some View {
+        /* 42% of the button, which is what the stylesheet gives the svg */
+        let size: CGFloat = 44 * 0.42
+        switch which {
+        case .sound: Glyph(paths: Icon.sound(level: soundLevel), size: size)
+        case .settings: Glyph(paths: [Icon.gear], size: size,
+                              circle: CGRect(x: 12 - 2.9, y: 12 - 2.9, width: 5.8, height: 5.8))
+        case .back: Glyph(paths: Icon.back, size: size)
+        case .on: Glyph(paths: Icon.on, size: size)
+        case .again: Glyph(paths: Icon.again, size: size)
+        case .menu: Glyph(paths: Icon.menu, size: size)
+        }
+    }
+
+    private func label(for which: BarButton) -> String {
+        switch which {
+        case .sound: ["Sound off", "Sound low", "Sound full"][soundLevel] + ", tap to change"
+        case .settings: "Match settings"
+        case .back: "Previous lesson"
+        case .on: "Next lesson"
+        case .again: "Start a new chat"
+        case .menu: "Open menu"
+        }
+    }
+
+    // MARK: - the full-screen menu
+
+    private func menu(width w: CGFloat, height h: CGFloat) -> some View {
+        /* font-size:clamp(2rem,12vw,9vh); the list is centred and the gap is 2.2vh */
+        let size = min(max(32, w * 0.12), h * 0.09)
+        return ZStack(alignment: .topTrailing) {
+            Color.clear.lacquerGround()
+            VStack(alignment: .leading, spacing: h * 0.022) {
                 ForEach(Screen.allCases, id: \.self) { item in
                     Button(item.title) {
                         screen = item
                         menuOpen = false
                     }
-                    .font(.display(44))
-                    .foregroundStyle(Lacquer.cream)
+                    .font(MG.display(size))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                    .foregroundStyle(.white)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .padding(.horizontal, 34)
+            .padding(.horizontal, 16)
 
             Button { menuOpen = false } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 19, weight: .semibold))
+                Glyph(paths: Icon.close, size: 44 * 0.42)
                     .frame(width: 44, height: 44)
-                    .background(.white, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .background(.white, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
-            .tint(Color(red: 0.16, green: 0.09, blue: 0.08))
-            .padding(.top, 10)
-            .padding(.trailing, 12)
+            .foregroundStyle(Lacquer.ink)
+            .padding(.top, heroCorner).padding(.trailing, heroCorner)
             .accessibilityLabel("Close menu")
         }
-        .transition(.opacity)
     }
 }
 
-/* The hero: the wordmark, and the three ways in. */
-struct HomeView: View {
-    var go: (Screen) -> Void
+/* The hero: the name, nothing else. 23.3vw of Instrument Serif on two lines, with the
+   gold dragon swimming across the join. */
+struct HeroView: View {
+    let width: CGFloat
+    let height: CGFloat
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: 0)
-            Text("香港 · HONG KONG")
-                .eyebrow()
-                .foregroundStyle(Lacquer.warm)
-            Text("MahjongGPT")
-                .font(.display(62))
-                .tracking(-3)
-                .foregroundStyle(Lacquer.cream)
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-                .padding(.top, 6)
-            Text("Hong Kong mahjong, a coach that reads your hand, and a school that teaches the game a screen at a time.")
-                .font(.mono(11))
-                .tracking(0.6)
-                .textCase(.uppercase)
-                .lineSpacing(4)
-                .foregroundStyle(Lacquer.warm)
-                .padding(.top, 14)
-                .frame(maxWidth: 320, alignment: .leading)
-
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach([Screen.play, .learn, .chat], id: \.self) { item in
-                    Button { go(item) } label: {
-                        HStack {
-                            Text(item.title)
-                            Spacer()
-                            Image(systemName: "arrow.right")
-                        }
-                        .font(.mono(12, weight: .semibold))
-                        .tracking(1.4)
-                        .padding(.vertical, 14)
-                        .padding(.horizontal, 16)
-                        .frame(maxWidth: 360)
-                        .background(Lacquer.cream.opacity(item == .play ? 1 : 0))
-                        .foregroundStyle(item == .play ? Lacquer.deep : Lacquer.cream)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(item == .play ? .clear : Lacquer.hairline)
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    }
-                }
+        let size = width * 0.233
+        ZStack {
+            VStack(spacing: 0) {
+                line("MAHJONG", size: size)
+                line("GPT", size: size)
             }
-            .padding(.top, 30)
-            Spacer(minLength: 0)
-            Text("麻雀 · DESIGN PROTOTYPE")
-                .eyebrow()
-                .foregroundStyle(Lacquer.warm.opacity(0.7))
-                .padding(.bottom, 8)
+            /* the dragon is drawn over the letters, as z-index:3 puts it on the page */
+            Image("hero-dragon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: width * 0.5435)
+                .position(x: width * 0.395, y: height * 0.497)
         }
-        .padding(.horizontal, 26)
-        .padding(.top, 70)
+        .frame(width: width, height: height)
+        .accessibilityElement()
+        .accessibilityLabel("MahjongGPT")
+    }
+
+    /* The page sets the name a letter at a time, which throws away the font's own kerning,
+       and then hands four pairs the space back by hand. Setting it the same way here is
+       what makes the two wordmarks the same width to the pixel. */
+    private static let kern: [String: CGFloat] = ["MA": 0.063, "AH": 0.058, "HJ": 0.03, "PT": 0.02]
+
+    private func line(_ word: String, size: CGFloat) -> some View {
+        let letters = Array(word)
+        return HStack(spacing: 0) {
+            ForEach(Array(letters.enumerated()), id: \.offset) { i, ch in
+                Text(String(ch))
+                    .font(MG.display(size))
+                    .tracking(-0.045 * size)
+                    .padding(.leading, i == 0 ? 0
+                             : (Self.kern[String(letters[i - 1]) + String(ch)] ?? 0) * size)
+            }
+        }
+        .foregroundStyle(.white)
+        .frame(height: size * 0.98, alignment: .center)
+        .shadow(color: Color(red: 32/255, green: 2/255, blue: 0).opacity(0.42), radius: 13, y: 10)
+        .shadow(color: Color(red: 32/255, green: 2/255, blue: 0).opacity(0.3), radius: 2, y: 2)
     }
 }

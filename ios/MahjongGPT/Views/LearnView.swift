@@ -62,106 +62,131 @@ func sayBlocks(_ text: String) -> [SayBlock] {
     return out
 }
 
+/* The school, set the way the page sets it on a phone: a 23px serif line, 13px serif
+   prose under it, the question in 10.5px mono small caps, and the tiles at the size the
+   lesson's own container query gives them. */
 struct LearnView: View {
     @Binding var state: LearnState
+    let width: CGFloat
 
     private var lesson: Lesson { state.lesson }
+    /// --tile: min(clamp(28px, min(8vw,10vh), 92px), 9.6cqw, (100vw - 80) / 14)
+    private var taskTile: CGFloat { max(16, (width - 80) / 14) }
+    private var inner: CGFloat { width - 32 }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                if state.step == 0 && !state.toured {
-                    TourView(line: lesson.title, groups: lesson.tour) { state.toured = true }
-                } else {
-                    lessonBody
+        /* .learn-body is a flex box and .learn-inner sits in the middle of it: a lesson is
+           centred in the screen, and only runs from the top when it is too tall to be. */
+        GeometryReader { geo in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    if state.step == 0 && !state.toured {
+                        TourView(line: lesson.title, groups: lesson.tour, width: inner) {
+                            state.toured = true
+                        }
+                    } else {
+                        lessonBody
+                    }
                 }
+                .frame(width: inner, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, corner(width) + 30)
+                .padding(.bottom, 30)
+                .frame(minHeight: geo.size.height, alignment: .center)
             }
-            .padding(.horizontal, 22)
-            .padding(.top, 76)
-            .padding(.bottom, 40)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .scrollBounceBehavior(.basedOnSize)
     }
 
     @ViewBuilder private var lessonBody: some View {
-        Text("Lesson \(state.step + 1) of \(Lessons.all.count)")
-            .eyebrow()
-            .foregroundStyle(Lacquer.gold)
-
         Text(lesson.title)
-            .font(.display(30))
+            .webType(MG.display(23), lineHeight: 24.15, over: MG.uiDisplay(23))
+            .tracking(-0.69)
             .foregroundStyle(Lacquer.cream)
             .fixedSize(horizontal: false, vertical: true)
+            .padding(.bottom, 8.05)
 
         ForEach(Array(sayBlocks(lesson.say).enumerated()), id: \.offset) { i, block in
             switch block {
             case .prose(let words):
-                HStack(alignment: .top, spacing: 10) {
+                HStack(alignment: .top, spacing: 9) {
                     if lesson.steps {
                         Text("\(i + 1)")
-                            .font(.mono(11))
+                            .font(MG.mono(10.5))
                             .foregroundStyle(Lacquer.gold)
                             .padding(.top, 3)
                     }
                     Text(words)
-                        .font(.system(size: 15))
-                        .lineSpacing(4)
-                        .foregroundStyle(Lacquer.cream.opacity(0.94))
+                        .webType(MG.display(13), lineHeight: 18.72, over: MG.uiDisplay(13))
+                        .foregroundStyle(Lacquer.say)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .padding(.bottom, 10)
             case .tiles(let faces):
-                tileRow(faces, width: faces.count > 9 ? 23 : 31)
+                tileRow(faces, width: faces.count > 9 ? 18 : 21.3, plate: true)
+                    .padding(.bottom, 10)
             }
         }
+        .padding(.bottom, 8)
 
-        if !lesson.row.isEmpty { tileRow(lesson.row, width: 38) }
+        if !lesson.row.isEmpty {
+            tileRow(lesson.row, width: taskTile, plate: false).padding(.bottom, 14)
+        }
 
         if !lesson.cards.isEmpty {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(lesson.cards.enumerated()), id: \.offset) { _, card in
-                    VStack(alignment: .leading, spacing: 7) {
-                        Text(card.cap).eyebrow().foregroundStyle(Lacquer.gold)
-                        tileRow(card.tiles, width: 36)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(card.cap)
+                            .eyebrow(size: 10.5)
+                            .foregroundStyle(Lacquer.gold)
+                        tileRow(card.tiles, width: 21.3, plate: false)
                         if !card.note.isEmpty {
                             Text(card.note)
-                                .font(.system(size: 13))
-                                .foregroundStyle(Lacquer.warm)
+                                .webType(MG.display(13), lineHeight: 18.72, over: MG.uiDisplay(13))
+                                .foregroundStyle(Lacquer.say)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 }
             }
+            .padding(.bottom, 16)
         }
 
-        if let task = lesson.task { TaskView(task: task, state: $state) }
+        if let task = lesson.task {
+            TaskView(task: task, state: $state, tile: taskTile, width: inner)
+        }
 
-        Button {
-            state.on()
-        } label: {
-            HStack {
+        HStack {
+            Spacer(minLength: 0)
+            Button { state.on() } label: {
                 Text(state.step == Lessons.all.count - 1 ? "Finish" : "Next lesson")
-                Image(systemName: "arrow.right")
+                    .font(MG.mono(11))
+                    .tracking(11 * 0.07)
+                    .textCase(.uppercase)
+                    .padding(.vertical, 9)
+                    .padding(.horizontal, 13)
+                    .frame(minHeight: 38)
+                    .background(state.solved ? Lacquer.cream : .clear, in: Capsule())
+                    .overlay { if !state.solved { Capsule().strokeBorder(Lacquer.choiceLine) } }
+                    .foregroundStyle(state.solved ? Lacquer.deep : Lacquer.cream)
             }
-            .font(.mono(12, weight: .semibold))
-            .tracking(1.2)
-            .textCase(.uppercase)
-            .padding(.vertical, 13)
-            .padding(.horizontal, 18)
-            .background(state.solved ? Lacquer.cream : .clear, in: Capsule())
-            .foregroundStyle(state.solved ? Lacquer.deep : Lacquer.cream)
-            .overlay { if !state.solved { Capsule().strokeBorder(Lacquer.hairline) } }
+            Spacer(minLength: 0)
         }
-        .padding(.top, 6)
+        .padding(.top, 18)
     }
 
-    private func tileRow(_ faces: [String], width: CGFloat) -> some View {
-        HStack(spacing: 4) {
+    /* .learn-tiles: a faint plate behind a run of tiles, 7px corners and 5px between. */
+    private func tileRow(_ faces: [String], width tw: CGFloat, plate: Bool) -> some View {
+        HStack(spacing: 5) {
             ForEach(Array(faces.enumerated()), id: \.offset) { _, face in
-                TileView(tile: Tiles.faces.firstIndex(of: face), width: width)
+                TileView(tile: Tiles.faces.firstIndex(of: face), width: tw, shadow: 2)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, plate ? 4 : 0)
+        .padding(.horizontal, plate ? 5 : 0)
+        .background(plate ? Color.white.opacity(0.07) : .clear,
+                    in: RoundedRectangle(cornerRadius: 7, style: .continuous))
     }
 }
 
@@ -169,39 +194,43 @@ struct LearnView: View {
 struct TourView: View {
     let line: String
     let groups: [LessonCard]
+    let width: CGFloat
     var done: () -> Void
     @State private var shown = 0
 
     var body: some View {
-        VStack(spacing: 26) {
+        VStack(spacing: 24) {
             Text(line)
-                .font(.display(30))
+                .webType(MG.display(23), lineHeight: 24.15, over: MG.uiDisplay(23))
+                .tracking(-0.69)
                 .foregroundStyle(Lacquer.cream)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 18)], spacing: 20) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 16)], spacing: 18) {
                 ForEach(Array(groups.enumerated()), id: \.offset) { i, group in
-                    VStack(spacing: 7) {
+                    VStack(spacing: 6) {
                         HStack(spacing: 3) {
                             ForEach(Array(group.tiles.enumerated()), id: \.offset) { _, face in
-                                TileView(tile: Tiles.faces.firstIndex(of: face), width: 30)
+                                TileView(tile: Tiles.faces.firstIndex(of: face), width: 26, shadow: 4)
                             }
                         }
-                        Text(group.cap).eyebrow().foregroundStyle(Lacquer.gold)
+                        Text(group.cap)
+                            .eyebrow(size: 10.5, tracking: 0.12)
+                            .foregroundStyle(Lacquer.gold)
                     }
                     .opacity(i < shown ? 1 : 0)
                     .scaleEffect(i < shown ? 1 : 0.86)
                 }
             }
 
-            Button("Tap to continue", action: done)
-                .font(.display(22))
+            Text("Tap to continue")
+                .webType(MG.display(23), lineHeight: 24.15, over: MG.uiDisplay(23))
+                .tracking(-0.69)
                 .foregroundStyle(Lacquer.warm)
                 .opacity(shown >= groups.count ? 1 : 0)
-                .disabled(shown < groups.count)
         }
-        .frame(maxWidth: .infinity)
+        .frame(width: width)
         .task {
             for i in 0...groups.count {
                 try? await Task.sleep(for: .milliseconds(i == 0 ? 450 : 420))
@@ -216,13 +245,18 @@ struct TourView: View {
 struct TaskView: View {
     let task: LessonTask
     @Binding var state: LearnState
+    let tile: CGFloat
+    let width: CGFloat
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             Text(task.prompt)
-                .eyebrow()
-                .foregroundStyle(Lacquer.warm)
+                .font(MG.mono(10.488))
+                .tracking(0.944)
+                .textCase(.uppercase)
+                .foregroundStyle(Lacquer.ask)
                 .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, 13)
 
             switch task {
             case .order(_, let row, let answer, let note):
@@ -241,29 +275,10 @@ struct TaskView: View {
                 feedback(ok: note, bad: "Not that one. Start again from the 1.")
 
             case .choice(_, let options, let answer, let note, let wrong):
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Array(options.enumerated()), id: \.offset) { i, option in
-                        Button {
-                            state.chosen = i
-                            state.solved = i == answer
-                            state.wrong = i != answer
-                        } label: {
-                            Text(option)
-                                .font(.system(size: 14))
-                                .padding(.vertical, 11)
-                                .padding(.horizontal, 15)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(state.chosen == i && state.solved
-                                            ? Lacquer.gold.opacity(0.22) : .clear,
-                                            in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                                        .strokeBorder(state.chosen == i && state.solved
-                                                      ? Lacquer.gold : Lacquer.hairline)
-                                }
-                                .foregroundStyle(Lacquer.cream)
-                        }
-                    }
+                choices(options) { i in
+                    state.chosen = i
+                    state.solved = i == answer
+                    state.wrong = i != answer
                 }
                 feedback(ok: note, bad: wrong)
 
@@ -285,35 +300,65 @@ struct TaskView: View {
                 sortTask(row: row, bins: bins, note: note, wrong: wrong)
             }
         }
-        .padding(.top, 4)
+        .frame(width: width, alignment: .leading)
     }
 
     private func tiles(_ row: [String], tap: @escaping (Int) -> Void,
                       lit: @escaping (Int) -> Bool) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 40), spacing: 6)], spacing: 8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: tile), spacing: 6)],
+                  alignment: .center, spacing: 8) {
             ForEach(Array(row.enumerated()), id: \.offset) { i, face in
                 Button { tap(i) } label: {
-                    TileView(tile: Tiles.faces.firstIndex(of: face), width: 38, lifted: lit(i), marked: lit(i))
+                    TileView(tile: Tiles.faces.firstIndex(of: face), width: tile,
+                             lifted: lit(i), ring: lit(i) ? .solid : .none, shadow: 3)
                 }
                 .buttonStyle(.plain)
             }
         }
+        .padding(.bottom, 10)
     }
 
-    @ViewBuilder private func sortTask(row: [String], bins: [String], note: String, wrong: String) -> some View {
+    /* .learn-choice: a 12px pill in the serif, hairline in rgba(255,199,168,.3). */
+    private func choices(_ options: [String], tap: @escaping (Int) -> Void) -> some View {
+        FlowRow(spacing: 7) {
+            ForEach(Array(options.enumerated()), id: \.offset) { i, option in
+                Button { tap(i) } label: {
+                    Text(option)
+                        .webType(MG.display(16), lineHeight: 20.8, over: MG.uiDisplay(16))
+                        .padding(.vertical, 9)
+                        .padding(.horizontal, 15)
+                        .background(state.chosen == i && state.solved
+                                    ? Lacquer.gold.opacity(0.12) : .clear,
+                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(state.chosen == i && state.solved
+                                              ? Lacquer.gold : Lacquer.choiceLine)
+                        }
+                        .foregroundStyle(state.chosen == i && state.solved ? .white : Lacquer.choice)
+                }
+            }
+        }
+        .padding(.bottom, 12)
+    }
+
+    @ViewBuilder private func sortTask(row: [String], bins: [String],
+                                       note: String, wrong: String) -> some View {
         let left = row.indices.filter { state.bins[$0] == nil }
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 40), spacing: 6)], spacing: 8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: tile), spacing: 6)],
+                  alignment: .center, spacing: 8) {
             ForEach(left, id: \.self) { i in
-                Button {
-                    state.held = state.held == i ? nil : i
-                } label: {
-                    TileView(tile: Tiles.faces.firstIndex(of: row[i]), width: 38,
-                             lifted: state.held == i, marked: state.held == i)
+                Button { state.held = state.held == i ? nil : i } label: {
+                    TileView(tile: Tiles.faces.firstIndex(of: row[i]), width: tile,
+                             lifted: state.held == i, ring: state.held == i ? .solid : .none,
+                             shadow: 3)
                 }
                 .buttonStyle(.plain)
             }
         }
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+        .padding(.bottom, 12)
+
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 6)], spacing: 6) {
             ForEach(Array(bins.enumerated()), id: \.offset) { b, bin in
                 Button {
                     guard let held = state.held else { return }
@@ -327,36 +372,70 @@ struct TaskView: View {
                         state.wrong = true
                     }
                 } label: {
-                    VStack(spacing: 4) {
-                        Text(bin).eyebrow()
-                        Text("\(state.bins.values.filter { $0 == b }.count)")
-                            .font(.mono(12))
+                    VStack(spacing: 3) {
+                        Text(bin).eyebrow(size: 10.5, tracking: 0.12)
+                        Text("\(state.bins.values.filter { $0 == b }.count)").font(MG.mono(11))
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 9)
                     .overlay {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(state.held != nil ? Lacquer.gold.opacity(0.7) : Lacquer.hairline,
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .strokeBorder(state.held != nil ? Lacquer.gold.opacity(0.6)
+                                                            : Lacquer.choiceLine,
                                           style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                     }
-                    .foregroundStyle(Lacquer.cream)
+                    .foregroundStyle(Lacquer.choice)
                 }
             }
         }
+        .padding(.bottom, 12)
         feedback(ok: note, bad: wrong)
     }
 
     @ViewBuilder private func feedback(ok: String, bad: String) -> some View {
         if state.solved && !ok.isEmpty {
             Text(ok)
-                .font(.system(size: 13))
+                .webType(MG.display(13), lineHeight: 18.72, over: MG.uiDisplay(13))
                 .foregroundStyle(Lacquer.gold)
                 .fixedSize(horizontal: false, vertical: true)
         } else if state.wrong && !bad.isEmpty {
             Text(bad)
-                .font(.system(size: 13))
+                .webType(MG.display(13), lineHeight: 18.72, over: MG.uiDisplay(13))
                 .foregroundStyle(Lacquer.warm)
                 .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+/// A row that wraps, the way `flex-wrap` does -- for choices of different lengths.
+struct FlowRow: Layout {
+    var spacing: CGFloat = 7
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > 0 && x + size.width > width { x = 0; y += rowHeight + spacing; rowHeight = 0 }
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        /* inline-flex: a run that fits on one line is only as wide as it is */
+        let used = max(0, x - spacing)
+        return CGSize(width: y == 0 ? used : (proposal.width ?? used), height: y + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize,
+                       subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX, y = bounds.minY, rowHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > bounds.minX && x + size.width > bounds.maxX {
+                x = bounds.minX; y += rowHeight + spacing; rowHeight = 0
+            }
+            view.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
         }
     }
 }
