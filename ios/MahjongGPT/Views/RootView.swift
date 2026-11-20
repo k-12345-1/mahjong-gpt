@@ -29,6 +29,8 @@ struct RootView: View {
     @State private var soundLevel = 2
     @State private var learn = LearnState()
     @State private var chat = ChatState()
+    @Environment(\.scenePhase) private var phase
+    private let account = Account.shared
 
     var body: some View {
         GeometryReader { geo in
@@ -58,6 +60,19 @@ struct RootView: View {
             .overlay { if menuOpen { menu(width: w, height: h) } }
         }
         .onAppear { Sound.load(); soundLevel = Sound.level }
+        /* Signed in, the row is read once on the way in -- and the moment it puts
+           something new in the store, the three places that read the store re-read it. */
+        .task { if Account.configured { await account.pull() } }
+        .onChange(of: account.landed) { _, _ in
+            table.reload()
+            learn.resume()
+            Sound.load()
+            soundLevel = Sound.level
+        }
+        /* Being put away is the one moment a save that is still waiting cannot wait. */
+        .onChange(of: phase) { _, now in
+            if now != .active { Task { await account.flush() } }
+        }
     }
 
     // MARK: - the bar in the corner
@@ -136,20 +151,28 @@ struct RootView: View {
         let size = min(max(32, w * 0.12), h * 0.09)
         return ZStack(alignment: .topTrailing) {
             Color.clear.lacquerGround()
-            VStack(alignment: .leading, spacing: h * 0.022) {
-                ForEach(Screen.allCases, id: \.self) { item in
-                    Button(item.title) {
-                        screen = item
-                        menuOpen = false
+            VStack(alignment: .leading, spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(alignment: .leading, spacing: h * 0.022) {
+                    ForEach(Screen.allCases, id: \.self) { item in
+                        Button(item.title) {
+                            screen = item
+                            menuOpen = false
+                        }
+                        .font(MG.display(size))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .foregroundStyle(.white)
                     }
-                    .font(MG.display(size))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                    .foregroundStyle(.white)
                 }
+                Spacer(minLength: 0)
+                /* With no project behind it there is no account anywhere in the app, and
+                   the links sit in the middle of the screen as they always did. */
+                if Account.configured { AccountBlock() }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
+            .padding(.bottom, 24)
 
             Button { menuOpen = false } label: {
                 Glyph(paths: Icon.close, size: 44 * 0.42)

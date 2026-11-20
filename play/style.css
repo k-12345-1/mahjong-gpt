@@ -49,6 +49,26 @@ footer{color:var(--muted)}
 .menu-links{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:10vh 9vw;gap:18px}
 .menu-links a{font:clamp(45px,10vw,138px)/.9 var(--display-font);letter-spacing:0}
 .menu-links a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.07em}
+
+/* Your account, at the foot of the menu -- the one piece of chrome every screen has. The
+   form is there when you are signed out and the two plain words when you are in, so the
+   block never grows a row you cannot use. With no project behind it the block is not in
+   the page at all, which is why the links only make room for it when it is. */
+#section-menu:has(.account) .menu-links{padding-bottom:max(10vh,172px)}
+.account{position:absolute;left:9vw;right:9vw;bottom:max(24px,5vh);display:grid;gap:9px;width:min(330px,82vw);font:11px/1.6 var(--mono-font);letter-spacing:.09em;text-transform:uppercase;color:#ffd9c9}
+.account-who{margin:0;color:var(--cream)}
+.account-in,.account-mine{display:grid;gap:7px;margin:0}
+.account-row{display:flex;gap:7px}
+.account input{flex:1;padding:8px 10px;border:1px solid #ffe0cb55;border-radius:5px;background:#ffffff14;color:var(--cream);font:inherit;letter-spacing:.06em}
+.account input::placeholder{color:#ffd0bb8c}
+.account button{flex:1;padding:8px 10px;border:1px solid #ffe0cb55;border-radius:5px;background:transparent;color:var(--cream);font:inherit;letter-spacing:.09em;text-transform:uppercase}
+.account button:hover{background:#ffffff1a}
+.account [data-account=in]{background:var(--cream);border-color:var(--cream);color:#58060a}
+.account [data-account=gone]{border-color:#ffb9a855;color:#ffc9bb}
+.account-mine,.account.on .account-in{display:none}
+.account.on .account-mine{display:grid}
+.account-say{margin:0;min-height:1.6em;color:#ffe9b6}
+.account-say.bad{color:#ffc3b2}
 @media(max-width:950px){.hero .wrap{grid-template-columns:1fr}.hero p{margin-top:14px;max-width:340px}.hero h1{font-size:clamp(44px,12.6vw,122px)}}
 @media(max-width:700px){header{gap:10px;min-height:64px}header nav{display:none}.menu-button{margin-left:auto}.hero .wrap{padding:30px 0 23px}.hero img{top:-42px;right:-40px}.columns{gap:24px}}
 

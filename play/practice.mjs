@@ -2,6 +2,7 @@ import { discardChoices, faanCeiling, handDistance, recommend } from './coach.mj
 import { clack, meld, say, wash } from './sound.mjs';
 import { endCurtain } from './curtain.mjs';
 import { washTiles } from './shuffle.mjs';
+import { push } from './account.mjs';
 /* While the table is counting the hands out, the way on is not offered yet: the
    controls would sit over the count asking to be pressed before it has been read. */
 let counting=false;
@@ -114,6 +115,7 @@ function keep(handOver){
     wall,hands,bonuses,melds,rivers,dealer,match,note,coach,
     completedHands,handDecisions,newTileIndex,canSelfDraw}));}
   catch{/* no store, and a table is not worth failing over */}
+  push(KEPT);
 }
 function restore(){
   let kept;

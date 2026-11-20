@@ -28,8 +28,14 @@ xcodebuild -project ios/MahjongGPT.xcodeproj -scheme MahjongGPT \
 
 Deployment target is iOS 17. The brief is how the site looks on a phone, so the app is an
 iPhone app in portrait -- an iPad would get a stretched phone layout, which is both wrong
-and a known reason for rejection. It needs no network at all: there is no account, no
-server and nothing is sent anywhere.
+and a known reason for rejection.
+
+Signing in is optional and off until a project is set: with `Engine/Account.swift` left
+blank the app reaches the network not at all, no account appears in the menu, and the
+table and the school sit in UserDefaults on the phone. Set it, and the same three values
+follow you to the web app and back -- `supabase/README.md` in the repo root has the
+whole of it, including what the App Store needs (an account you can delete from inside
+the app, and a privacy manifest that now declares the address and the saved game).
 
 ## The engine's own check
 
@@ -52,8 +58,10 @@ reason the port can be trusted to count a hand the same way.
 | `MahjongGPT/Engine/Deal.swift` | how the deal and the round pass round the table |
 | `MahjongGPT/Engine/Table.swift` | the table itself: the wall, the turns, the claims, the match |
 | `MahjongGPT/Engine/Sound.swift` | the tiles, synthesised rather than recorded, and the calls spoken |
+| `MahjongGPT/Engine/Account.swift` | signing in and carrying the saves -- URLSession, no package, session in the keychain |
 | `MahjongGPT/Views/Theme.swift` | the colours, the two faces, and the ground -- the numbers read off the page |
 | `MahjongGPT/Views/Icons.swift` | the site's own SVG paths, parsed and stroked, so a button is the button on the page |
+| `MahjongGPT/Views/AccountBlock.swift` | the sign-in at the foot of the menu, where the web app puts it |
 | `MahjongGPT/Views/` | the four screens and the tile |
 | `MahjongGPT/Fonts/` | Instrument Serif and JetBrains Mono, converted from the woff2 the site serves, with their licences |
 | `MahjongGPT/Content/Lessons.swift` | the school: 16 lessons, tapped rather than dragged |
@@ -72,8 +80,10 @@ What is left needs the account, and so needs you:
    bundle identifier is `com.mahjonggpt.MahjongGPT` — change it to one you own.
 2. **App Store Connect.** Make the app record, then Product ▸ Archive ▸ Distribute.
 3. **Screenshots** for a 6.9" iPhone. No iPad set is needed while the target is iPhone only.
-4. **The privacy questionnaire.** The honest answers are "no data collected" and "no
-   tracking", which is what the manifest in the project says too.
+4. **The privacy questionnaire.** With accounts off, the honest answers are "no data
+   collected" and "no tracking". With a project set, it is the address you sign in with
+   and the saved game, both linked to you, both for app functionality, neither used for
+   tracking -- which is what `PrivacyInfo.xcprivacy` now declares.
 5. **The name.** "GPT" is OpenAI's trademark and Apple has rejected app names that use it.
    The app's display name is set in one place — `INFOPLIST_KEY_CFBundleDisplayName` in the
    project — if you would rather not find out the hard way.

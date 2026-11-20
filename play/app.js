@@ -2,6 +2,7 @@ import { mountPractice } from './practice.mjs';
 import { mountGpt, resetGpt } from './gpt.mjs';
 import { mountLearn, learnStep, learnReset } from './learn.mjs';
 import { clack, volume, setVolume } from './sound.mjs';
+import { mountAccount } from './account.mjs';
 const app = document.querySelector('#app');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const motion = (target, frames, options) => {
@@ -174,4 +175,8 @@ document.querySelector('#open-menu').onclick = () => {
   motion(menu.querySelector('.menu-links'), {opacity:[0,1],y:[20,0]}, {duration:.3});
 };
 document.querySelector('#close-menu').onclick = () => menu.close();
+/* Signing in sits at the foot of the menu, which is the one piece of chrome every screen
+   has. Built here rather than in the markup, so with no project behind it there is
+   nothing in the page to explain. */
+mountAccount(menu);
 menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => menu.close()));

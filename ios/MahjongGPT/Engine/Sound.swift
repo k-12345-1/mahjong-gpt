@@ -7,7 +7,10 @@ import AVFoundation
 enum Sound {
     /// 0 silent, 1 soft, 2 full -- the control steps up and wraps, as it does on the web
     static var level = 2 {
-        didSet { UserDefaults.standard.set(level, forKey: "mahjong-sound") }
+        didSet {
+            UserDefaults.standard.set(level, forKey: "mahjong-sound")
+            if level != oldValue { Account.shared.push(.sound) }
+        }
     }
 
     private static let engine = AVAudioEngine()

@@ -1,8 +1,23 @@
 import SwiftUI
 
 struct LearnState {
-    var step = 0
-    var toured = false
+    /* Where the school was left, kept as the web app keeps it: one number, the lesson,
+       and nothing about how it was answered. Until now this app kept nothing -- walking
+       out of the school and back in started it again. */
+    static let schoolKey = "mahjong-school"
+    static var recalled: Int {
+        let n = UserDefaults.standard.integer(forKey: schoolKey)
+        return n > 0 && n < Lessons.all.count ? n : 0
+    }
+
+    var step = LearnState.recalled {
+        didSet {
+            UserDefaults.standard.set(step, forKey: LearnState.schoolKey)
+            Account.noteSchool()
+        }
+    }
+    /// a lesson reached before is landed on at its task, with the tour as the step behind it
+    var toured = LearnState.recalled > 0
     var tapped: [Int] = []       // the order task, as far as it has got
     var picked: [Int] = []       // the pick task
     var chosen: Int?             // the choice task
@@ -13,6 +28,13 @@ struct LearnState {
 
     var lesson: Lesson { Lessons.all[min(step, Lessons.all.count - 1)] }
     var canGoBack: Bool { step > 0 || (step == 0 && toured) }
+
+    /// after a sign-in has brought a further lesson down from elsewhere
+    mutating func resume() {
+        step = LearnState.recalled
+        toured = step > 0
+        clear()
+    }
 
     mutating func clear() {
         tapped = []; picked = []; chosen = nil; bins = [:]; held = nil

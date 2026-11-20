@@ -46,10 +46,13 @@ the repo as sources.
 | `play/style.css` | all of the game's layout and type |
 | `play/tile-art/` | the tiles: `fronts/` drawn as SVG, `rendered-fronts/` the webps actually served |
 | `dragon.glb` | the sculpt `dragon.html` carries inline — the source, not served |
+| `play/account.mjs` | signing in, and carrying the saves to the account — see `supabase/README.md` |
+| `supabase/` | the accounts database: one table, two functions, and what is left to set up |
 
 ## Tests
 
 ```sh
 node test-scoring.mjs
 node test-coach.mjs
+node test-sync.mjs      # the web and the app agree on what a saved value is called
 ```

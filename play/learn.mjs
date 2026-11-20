@@ -5,6 +5,7 @@
    different pieces of knowledge. Four kinds of asking cover the whole game -- sort tiles
    into their kinds, tap them into order, pick a set out of a row, or answer a question
    about play. Nothing is a trick: a wrong answer says what to look at instead. */
+import { push } from './account.mjs';
 import { faces, label, img } from './practice.mjs';
 
 const FACE_SET = new Set(faces);
@@ -615,7 +616,10 @@ function choose(i) {
 /* Where the school was left, kept across a reload as well as across a step out to the
    table. One number: the lesson, and nothing about how it was answered. */
 const KEPT = 'mahjong-school';
-function remember(n) { try { localStorage.setItem(KEPT, String(n)); } catch { /* no store */ } }
+function remember(n) {
+  try { localStorage.setItem(KEPT, String(n)); } catch { /* no store */ }
+  push(KEPT);
+}
 function recall() {
   try {
     const n = Number(localStorage.getItem(KEPT));

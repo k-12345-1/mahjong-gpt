@@ -699,8 +699,12 @@ final class Table {
                         canSelfDraw: canSelfDraw)
         if let data = try? JSONEncoder().encode(kept) {
             UserDefaults.standard.set(data, forKey: Self.keptKey)
+            Account.shared.push(.table)
         }
     }
+
+    /// Read the store again, after signing in has brought a table down from another phone.
+    func reload() { _ = restore() }
 
     private func restore() -> Bool {
         guard let data = UserDefaults.standard.data(forKey: Self.keptKey),

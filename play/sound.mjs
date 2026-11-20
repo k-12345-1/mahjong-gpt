@@ -4,6 +4,7 @@
    A tile landing on a felted table is a short, bright knock -- a few milliseconds of strike
    noise for the edge of one hard thing meeting another, then the slab's own resonances
    dying away inside a tenth of a second. */
+import { push } from './account.mjs';
 /* A tile going down knocks, and a claim is called by name. What is still off is the
    three knocks that used to lay a claimed set down under the call: the call carries the
    moment on its own, and the knocks on top of it only made it busier. */
@@ -28,6 +29,7 @@ export function volume() { return level; }
 export function setVolume(value) {
   level = Math.max(0, Math.min(2, Math.round(Number(value) || 0)));
   try { localStorage.setItem('mahjong-volume', String(level)); } catch { /* no store */ }
+  push('mahjong-volume');
 }
 
 /* Browsers refuse to start audio before the page has been touched, so the context is made
