@@ -4,8 +4,16 @@ An account carries three things between a browser and a phone: the table you lef
 mid-hand, the lesson you reached in the school, and how loud it is. Nothing else — there
 is nothing else the game keeps.
 
-Signed out, or before the project below exists, **none of this is in the app**: no
-sign-in appears in either menu, nothing is sent anywhere, and the saves sit in
+You reach it the same way in both: open the menu, and **SETTINGS** is the fifth line
+after MAHJONG GPT. Pressing it hands the menu over to the panel, and BACK gives it back.
+
+An account is one account. Make it on the phone and it signs in on the web, and the
+other way about — same project, same list of people, same email and password. The
+password rule is the project's: neither client keeps a copy of it, because a copy is a
+rule that can disagree.
+
+Signed out, or before the project below exists, **none of this is in either app**: there
+is no SETTINGS line at all, nothing is sent anywhere, and the saves sit in
 `localStorage` and `UserDefaults` exactly as they did before. The two blank constants are
 the switch.
 

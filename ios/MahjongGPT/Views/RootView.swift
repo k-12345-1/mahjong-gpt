@@ -25,6 +25,8 @@ struct RootView: View {
     @Environment(Table.self) private var table
     @State private var screen: Screen = .home
     @State private var menuOpen = false
+    /// whether the menu is showing its five links or what the fifth one opens
+    @State private var menuSettings = false
     @State private var settingsOpen = false
     @State private var soundLevel = 2
     @State private var learn = LearnState()
@@ -60,6 +62,8 @@ struct RootView: View {
             .overlay { if menuOpen { menu(width: w, height: h) } }
         }
         .onAppear { Sound.load(); soundLevel = Sound.level }
+        /* the menu always opens on its list, however it was left */
+        .onChange(of: menuOpen) { _, open in if !open { menuSettings = false } }
         /* Signed in, the row is read once on the way in -- and the moment it puts
            something new in the store, the three places that read the store re-read it. */
         .task { if Account.configured { await account.pull() } }
@@ -146,6 +150,15 @@ struct RootView: View {
 
     // MARK: - the full-screen menu
 
+    private func link(_ title: String, size: CGFloat,
+                      tap: @escaping () -> Void) -> some View {
+        Button(title, action: tap)
+            .font(MG.display(size))
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
+            .foregroundStyle(.white)
+    }
+
     private func menu(width w: CGFloat, height h: CGFloat) -> some View {
         /* font-size:clamp(2rem,12vw,9vh); the list is centred and the gap is 2.2vh */
         let size = min(max(32, w * 0.12), h * 0.09)
@@ -153,26 +166,30 @@ struct RootView: View {
             Color.clear.lacquerGround()
             VStack(alignment: .leading, spacing: 0) {
                 Spacer(minLength: 0)
-                VStack(alignment: .leading, spacing: h * 0.022) {
-                    ForEach(Screen.allCases, id: \.self) { item in
-                        Button(item.title) {
-                            screen = item
-                            menuOpen = false
+                /* Pressing the fifth one takes the menu over rather than opening
+                   something beside it, as it does on the web: the links step aside and
+                   the panel stands where they were. */
+                if menuSettings {
+                    AccountBlock(back: { menuSettings = false })
+                } else {
+                    VStack(alignment: .leading, spacing: h * 0.022) {
+                        ForEach(Screen.allCases, id: \.self) { item in
+                            link(item.title, size: size) {
+                                screen = item
+                                menuOpen = false
+                            }
                         }
-                        .font(MG.display(size))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                        .foregroundStyle(.white)
+                        /* With no project behind it there is no account anywhere in the
+                           app, and the menu is the four screens it always was. */
+                        if Account.configured {
+                            link("SETTINGS", size: size) { menuSettings = true }
+                        }
                     }
                 }
                 Spacer(minLength: 0)
-                /* With no project behind it there is no account anywhere in the app, and
-                   the links sit in the middle of the screen as they always did. */
-                if Account.configured { AccountBlock() }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
-            .padding(.bottom, 24)
 
             Button { menuOpen = false } label: {
                 Glyph(paths: Icon.close, size: 44 * 0.42)

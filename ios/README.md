@@ -61,7 +61,7 @@ reason the port can be trusted to count a hand the same way.
 | `MahjongGPT/Engine/Account.swift` | signing in and carrying the saves -- URLSession, no package, session in the keychain |
 | `MahjongGPT/Views/Theme.swift` | the colours, the two faces, and the ground -- the numbers read off the page |
 | `MahjongGPT/Views/Icons.swift` | the site's own SVG paths, parsed and stroked, so a button is the button on the page |
-| `MahjongGPT/Views/AccountBlock.swift` | the sign-in at the foot of the menu, where the web app puts it |
+| `MahjongGPT/Views/AccountBlock.swift` | signing in — what the menu's SETTINGS opens, as on the web |
 | `MahjongGPT/Views/` | the four screens and the tile |
 | `MahjongGPT/Fonts/` | Instrument Serif and JetBrains Mono, converted from the woff2 the site serves, with their licences |
 | `MahjongGPT/Content/Lessons.swift` | the school: 16 lessons, tapped rather than dragged |

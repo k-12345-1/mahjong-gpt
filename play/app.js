@@ -175,8 +175,8 @@ document.querySelector('#open-menu').onclick = () => {
   motion(menu.querySelector('.menu-links'), {opacity:[0,1],y:[20,0]}, {duration:.3});
 };
 document.querySelector('#close-menu').onclick = () => menu.close();
-/* Signing in sits at the foot of the menu, which is the one piece of chrome every screen
-   has. Built here rather than in the markup, so with no project behind it there is
-   nothing in the page to explain. */
+/* Signing in is SETTINGS, the fifth thing in the menu, after the four screens. Built
+   here rather than in the markup, so with no project behind it there is no fifth line
+   and nothing in the page to explain. */
 mountAccount(menu);
 menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => menu.close()));

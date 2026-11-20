@@ -97,7 +97,10 @@ async function flush(keepalive) {
 
 /* Leaving the page is the one moment the wait cannot be afforded, and keepalive is what
    lets the request outlive the document. */
-addEventListener('pagehide', () => { clearTimeout(timer); flush(true); });
+/* `?.` because this module is reached from node as well: test-scoring and test-coach
+   import the table, and the table imports this. Everything else here is behind a
+   function or a try, so this one line was the whole of what broke there. */
+globalThis.addEventListener?.('pagehide', () => { clearTimeout(timer); flush(true); });
 
 async function pull() {
   const bearer = await token();
@@ -124,13 +127,13 @@ function land() {
   location.reload();
 }
 
-/* ---- the block at the foot of the menu -------------------------------------------- */
+/* ---- the panel the menu's SETTINGS opens ------------------------------------------- */
 
 let box;
 
 const SAY = {
   in: 'SIGN IN', join: 'MAKE ONE', out: 'SIGN OUT',
-  gone: 'DELETE ACCOUNT', sure: 'DELETE FOR GOOD?',
+  gone: 'DELETE ACCOUNT', sure: 'DELETE FOR GOOD?', back: 'BACK',
 };
 
 function paint() {
@@ -157,14 +160,29 @@ async function tries(button, work) {
 
 export function mountAccount(menu) {
   if (!configured) return;
+  const links = menu.querySelector('.menu-links');
+
+  /* The fifth thing in the menu, after the four screens. A button rather than a link
+     because it goes nowhere: it takes the menu over, and the way back is where the
+     links were. */
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.textContent = 'SETTINGS';
+  links.append(open);
+
   box = document.createElement('div');
-  box.className = 'account';
+  box.className = 'account menu-gone';
   box.innerHTML =
+    '<h2>Settings</h2>' +
     '<p class="account-who"></p>' +
     '<form class="account-in">' +
       '<input type="email" name="email" autocomplete="email" required placeholder="EMAIL">' +
+      /* No length rule here. The project owns what a password has to be, and a copy of
+         that rule in the page is a rule that can disagree with it -- an account made in
+         the app with a shorter one would be turned away by this form before the server
+         ever saw it. What the project says is shown like any other answer. */
       '<input type="password" name="password" autocomplete="current-password" required ' +
-             'minlength="8" placeholder="PASSWORD">' +
+             'placeholder="PASSWORD">' +
       '<div class="account-row">' +
         '<button type="submit" data-account="in">' + SAY.in + '</button>' +
         '<button type="button" data-account="join">' + SAY.join + '</button>' +
@@ -174,8 +192,19 @@ export function mountAccount(menu) {
       '<button type="button" data-account="out">' + SAY.out + '</button>' +
       '<button type="button" data-account="gone">' + SAY.gone + '</button>' +
     '</div>' +
-    '<p class="account-say" role="status"></p>';
+    '<p class="account-say" role="status"></p>' +
+    '<button type="button" data-account="back">' + SAY.back + '</button>';
   menu.append(box);
+
+  function show(settings) {
+    links.classList.toggle('menu-gone', settings);
+    box.classList.toggle('menu-gone', !settings);
+    if (settings) box.querySelector('input')?.focus();
+  }
+  open.onclick = () => show(true);
+  box.querySelector('[data-account=back]').onclick = () => show(false);
+  /* the menu always opens on the four screens, however it was left */
+  menu.addEventListener('close', () => show(false));
 
   const form = box.querySelector('.account-in');
   const who = () => {

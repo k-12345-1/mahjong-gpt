@@ -1,10 +1,10 @@
 import SwiftUI
 
-/* Signing in sits at the foot of the menu, which is the one piece of chrome every screen
-   has -- the same place, and the same small mono type, as on the web. The form is there
-   when you are signed out and the two plain words when you are in, so the block never
-   grows a row you cannot use. */
+/* What the menu's fifth line opens -- the same panel, in the same place and the same
+   small mono type, as on the web. The form is there when you are signed out and the two
+   plain words when you are in, so the block never grows a row you cannot use. */
 struct AccountBlock: View {
+    var back: () -> Void
     private let account = Account.shared
     @State private var email = ""
     @State private var password = ""
@@ -15,6 +15,12 @@ struct AccountBlock: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
+            /* 38px is what the web's clamp(38px,8vw,92px) comes to at a phone's width */
+            Text("Settings")
+                .font(MG.display(38))
+                .foregroundStyle(.white)
+                .padding(.bottom, 6)
+
             small(account.signedIn ? (account.email ?? "") : "Carry your game between devices")
                 .foregroundStyle(Lacquer.cream)
 
@@ -27,6 +33,10 @@ struct AccountBlock: View {
                                      : Color(red: 1, green: 0.914, blue: 0.714))
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            press("Back", action: back)
+                .frame(maxWidth: 140)
+                .padding(.top, 9)
         }
         .frame(maxWidth: 330, alignment: .leading)
         .disabled(account.busy)
@@ -98,8 +108,8 @@ struct AccountBlock: View {
     }
 
     private func press(_ title: String, filled: Bool = false, warn: Bool = false,
-                       tap: @escaping () -> Void) -> some View {
-        Button(action: tap) {
+                       action: @escaping () -> Void) -> some View {
+        Button(action: action) {
             small(title)
                 .foregroundStyle(filled ? Color(red: 88/255, green: 6/255, blue: 10/255)
                                         : (warn ? Color(red: 1, green: 0.788, blue: 0.733)
